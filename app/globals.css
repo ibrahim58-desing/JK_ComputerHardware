@@ -67,7 +67,6 @@
 
   html {
     @apply font-sans;
-    scroll-behavior: smooth;
     background-color: var(--background);
   }
 
