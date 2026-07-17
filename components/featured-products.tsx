@@ -5,16 +5,9 @@ import { ArrowRight } from 'lucide-react'
 import { SectionHeading } from '@/components/section-heading'
 import { ProductCard } from '@/components/product-card'
 import { RevealGroup } from '@/components/reveal'
-import { products } from '@/lib/products'
+import { Product } from '@/lib/products'
 
-// Intel i9-13900K | RTX 4070 | LG 4K Monitor | Keychron K8 Pro
-const featuredIds = [1, 3, 5, 7]
-
-export function FeaturedProducts() {
-  const featured = featuredIds
-    .map((id) => products.find((p) => p.id === id)!)
-    .filter(Boolean)
-
+export function FeaturedProducts({ featuredProducts }: { featuredProducts: Product[] }) {
   return (
     <section className="bg-surface px-5 py-20 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -24,8 +17,8 @@ export function FeaturedProducts() {
           align="center"
         />
         <RevealGroup className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {featuredProducts.map((p) => (
+            <ProductCard key={p.id} product={p as any} />
           ))}
         </RevealGroup>
         <div className="mt-12 flex justify-center">

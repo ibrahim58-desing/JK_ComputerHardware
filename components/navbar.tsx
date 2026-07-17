@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X, Search, MessageCircle } from 'lucide-react'
-import { products } from '@/lib/products'
+import { Product } from '@/lib/products'
 
 const links = [
   { href: '/', label: 'Home' },
@@ -21,6 +21,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchProducts, setSearchProducts] = useState<Product[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -44,11 +45,25 @@ export function Navbar() {
       }
     }
     document.addEventListener('mousedown', handler)
+    
+    // Fetch products for search
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setSearchProducts(data.data.map((p: any) => ({
+            ...p,
+            category: p.category?.name || 'Hardware'
+          })))
+        }
+      })
+      .catch(err => console.error("Failed to fetch products for search", err))
+      
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
   const suggestions = searchQuery.trim().length > 0
-    ? products.filter((p) =>
+    ? searchProducts.filter((p) =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase())
       ).slice(0, 5)
@@ -132,7 +147,7 @@ export function Navbar() {
                   {suggestions.map((p) => (
                     <Link
                       key={p.id}
-                      href={`/products`}
+                      href={`/products/${p.id}`}
                       onClick={() => {
                         setSearchOpen(false)
                         setSearchQuery('')
@@ -195,7 +210,7 @@ export function Navbar() {
                   {suggestions.map((p) => (
                     <Link
                       key={p.id}
-                      href="/products"
+                      href={`/products/${p.id}`}
                       onClick={() => {
                         setSearchOpen(false)
                         setSearchQuery('')

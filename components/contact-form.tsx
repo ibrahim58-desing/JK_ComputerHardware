@@ -14,9 +14,39 @@ const fields = [
 export function ContactForm() {
   const [sent, setSent] = useState(false)
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const [sending, setSending] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setSent(true)
+    setSending(true)
+
+    const formData = new FormData(e.currentTarget)
+    const payload = {
+      customerName: formData.get('name'),
+      phone: formData.get('phone'),
+      email: formData.get('email'),
+      subject: formData.get('subject'),
+      message: formData.get('message'),
+    }
+
+    try {
+      const res = await fetch('/api/enquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (res.ok) {
+        setSent(true)
+        e.currentTarget.reset()
+      } else {
+        alert('Failed to send message. Please try again.')
+      }
+    } catch (error) {
+      alert('An error occurred. Please try again.')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -64,9 +94,10 @@ export function ContactForm() {
 
         <button
           type="submit"
-          className="group flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-semibold text-primary-foreground transition-all hover:gap-3 hover:shadow-blue-lg"
+          disabled={sending}
+          className="group flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-semibold text-primary-foreground transition-all hover:gap-3 hover:shadow-blue-lg disabled:opacity-70"
         >
-          Send Message
+          {sending ? 'Sending...' : 'Send Message'}
           <Send size={17} className="transition-transform group-hover:translate-x-1" />
         </button>
 

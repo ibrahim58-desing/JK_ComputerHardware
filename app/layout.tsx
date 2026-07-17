@@ -36,23 +36,33 @@ export const viewport: Viewport = {
   themeColor: '#0057ff',
 }
 
-export default function RootLayout({
+import { headers } from 'next/headers'
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const headersList = await headers()
+  const pathname = headersList.get('x-pathname') || ''
+  const isAdmin = pathname.startsWith('/admin')
+
   return (
     <html
       lang="en"
       className={`${inter.variable} ${orbitron.variable} ${jetbrains.variable} bg-background`}
     >
       <body className="font-sans antialiased overflow-x-hidden">
-        <Navbar />
-        <PageTransition>
+        {!isAdmin && <Navbar />}
+        {!isAdmin ? (
+          <PageTransition>
+            <main>{children}</main>
+          </PageTransition>
+        ) : (
           <main>{children}</main>
-        </PageTransition>
-        <Footer />
-        <FloatingButtons />
+        )}
+        {!isAdmin && <Footer />}
+        {!isAdmin && <FloatingButtons />}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

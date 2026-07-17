@@ -1,0 +1,109 @@
+// JK Computer Hardware — Prisma Schema
+// PostgreSQL database schema for the e-commerce website
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Admin Users ────────────────────────────────────────────────────────────────
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  role         String   @default("admin")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admins")
+}
+
+// ─── Product Categories ─────────────────────────────────────────────────────────
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  slug     String    @unique
+  products Product[]
+
+  @@map("categories")
+}
+
+// ─── Products ───────────────────────────────────────────────────────────────────
+
+model Product {
+  id               Int            @id @default(autoincrement())
+  name             String
+  slug             String         @unique
+  description      String         @default("")
+  shortDescription String         @default("") @map("short_description")
+  price            String         @default("₹0")
+  numericPrice     Float          @default(0) @map("numeric_price")
+  stock            Int            @default(0)
+  brand            String         @default("")
+  specs            Json           @default("[]")
+  badge            Json?
+  image            String         @default("/placeholder.jpg")
+  featured         Boolean        @default(false)
+  status           String         @default("active") // active | inactive
+  categoryId       Int            @map("category_id")
+  category         Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images           ProductImage[]
+  enquiries        Enquiry[]
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([status])
+  @@index([featured])
+  @@index([createdAt])
+  @@index([numericPrice])
+  @@map("products")
+}
+
+// ─── Product Images ─────────────────────────────────────────────────────────────
+
+model ProductImage {
+  id           Int     @id @default(autoincrement())
+  productId    Int     @map("product_id")
+  imageUrl     String  @map("image_url")
+  displayOrder Int     @default(0) @map("display_order")
+  product      Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// ─── Customer Enquiries ─────────────────────────────────────────────────────────
+
+model Enquiry {
+  id           Int      @id @default(autoincrement())
+  customerName String   @map("customer_name")
+  phone        String   @default("")
+  email        String   @default("")
+  subject      String   @default("")
+  message      String
+  productId    Int?     @map("product_id")
+  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([productId])
+  @@map("enquiries")
+}
+
+// ─── Site Settings ──────────────────────────────────────────────────────────────
+
+model SiteSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   @default("")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}

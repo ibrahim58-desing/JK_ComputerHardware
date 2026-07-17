@@ -1,0 +1,139 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { adminFetch } from '@/lib/admin-fetch'
+import Link from 'next/link'
+import { Plus, Search, Edit, Trash2, Loader2, Image as ImageIcon } from 'lucide-react'
+
+export default function AdminProductsPage() {
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+
+  const fetchProducts = async () => {
+    setLoading(true)
+    const res = await adminFetch(`/api/admin/products?search=${search}`)
+    const data = await res.json()
+    if (data.success) {
+      setProducts(data.data)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchProducts()
+  }, [search])
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this product?')) return
+    
+    await adminFetch(`/api/admin/products/${id}`, { method: 'DELETE' })
+    fetchProducts()
+  }
+
+  return (
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="font-heading text-3xl font-bold text-foreground">Products</h1>
+        <Link
+          href="/admin/products/new"
+          className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          <Plus size={18} />
+          Add Product
+        </Link>
+      </div>
+
+      <div className="mt-8">
+        <div className="flex items-center rounded-xl border border-input bg-card px-3 py-2.5 max-w-md">
+          <Search size={18} className="text-text-secondary" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            className="ml-2 flex-1 bg-transparent text-sm outline-none"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-card-border bg-card shadow-blue overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center h-48">
+            <Loader2 size={32} className="animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-surface text-text-secondary border-b border-card-border">
+                <tr>
+                  <th className="px-6 py-4 font-semibold">Product</th>
+                  <th className="px-6 py-4 font-semibold">Category</th>
+                  <th className="px-6 py-4 font-semibold">Price</th>
+                  <th className="px-6 py-4 font-semibold">Status</th>
+                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-card-border">
+                {products.map((product) => (
+                  <tr key={product.id} className="hover:bg-surface/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface border border-card-border flex items-center justify-center text-text-secondary">
+                          {product.image && product.image !== '/placeholder.jpg' ? (
+                            <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <ImageIcon size={20} />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{product.name}</p>
+                          <p className="text-xs text-text-secondary">{product.brand}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-text-secondary">{product.category?.name}</td>
+                    <td className="px-6 py-4 font-medium">{product.price}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                        {product.status}
+                      </span>
+                      {product.featured && (
+                        <span className="ml-2 px-2.5 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-700">
+                          Featured
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/products/${product.id}/edit`}
+                          className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                        >
+                          <Edit size={16} />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {products.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-text-secondary">
+                      No products found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

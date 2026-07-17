@@ -12,7 +12,7 @@ import {
 import { itemVariants } from '@/components/reveal'
 
 export function ProductCard({ product }: { product: Product }) {
-  const Icon = categoryIcons[product.category]
+  const Icon = categoryIcons[product.category as keyof typeof categoryIcons]
   const waMessage = encodeURIComponent(
     `Hi JK Computers! I am interested in buying ${product.name}. Please share availability and details.`
   )
@@ -20,31 +20,36 @@ export function ProductCard({ product }: { product: Product }) {
     <motion.div variants={itemVariants} layout className="h-full">
       <TiltCard
         max={10}
-        className="group h-full rounded-2xl border border-card-border bg-card p-6 shadow-blue transition-colors duration-300 hover:border-primary"
+        className="group h-full rounded-2xl border border-card-border bg-card p-6 shadow-blue transition-colors duration-300 hover:border-primary relative"
       >
-        <div className="flex items-start justify-between" style={{ transform: 'translateZ(30px)' }}>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Icon size={24} />
+        {/* Invisible Link stretching over card */}
+        <Link href={`/products/${product.id}`} className="absolute inset-0 z-0 rounded-2xl" aria-label={`View ${product.name}`} />
+
+        {/* Product Image */}
+        <div className="relative z-10 rounded-xl overflow-hidden bg-surface aspect-[4/3] mb-4 -mx-2 -mt-2 pointer-events-none" style={{ transform: 'translateZ(30px)' }}>
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <div className="absolute top-3 left-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background/80 backdrop-blur-md text-primary border border-white/10">
+            {Icon ? <Icon size={20} /> : null}
           </div>
           {product.badge && (
             <span
-              className={`rounded-full px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide ${badgeClasses[product.badge.tone]}`}
+              className={`absolute top-3 right-3 rounded-full px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide backdrop-blur-md ${badgeClasses[product.badge.tone]}`}
             >
               {product.badge.label}
             </span>
           )}
         </div>
 
-        <Link href={`/products/${product.id}`} className="group-hover:text-primary transition-colors">
+        <div className="relative z-10 pointer-events-none group-hover:text-primary transition-colors">
           <h3
             className="mt-5 text-lg font-bold leading-snug text-card-foreground"
             style={{ transform: 'translateZ(20px)' }}
           >
             {product.name}
           </h3>
-        </Link>
+        </div>
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="relative z-10 pointer-events-none mt-3 flex flex-wrap gap-1.5">
           {product.specs.map((s) => (
             <span
               key={s}
@@ -56,7 +61,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         <div
-          className="mt-6 flex items-center justify-between"
+          className="relative z-10 pointer-events-none mt-6 flex items-center justify-between"
           style={{ transform: 'translateZ(25px)' }}
         >
           <span className="font-heading text-2xl font-bold text-primary">
@@ -68,8 +73,8 @@ export function ProductCard({ product }: { product: Product }) {
           href={`https://wa.me/919876543210?text=${waMessage}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg"
-          style={{ backgroundColor: '#25D366' }}
+          className="relative z-10 mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg"
+          style={{ backgroundColor: '#25D366', transform: 'translateZ(30px)' }}
         >
           <MessageCircle size={16} />
           WhatsApp to Order
