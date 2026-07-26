@@ -72,7 +72,7 @@ export default async function HomePage() {
       <FeaturedProducts featuredProducts={formattedFeatured as any} />
       <HomepageCategorySections sections={categorySections} />
       <BrandsMarquee />
-      <StatsBand heading="Why builders across Chennai choose JK." />
+      <StatsBand heading="Why customers across India choose JK Infosystem." />
       <HomeServices />
       <Testimonials />
       <CtaBanner />

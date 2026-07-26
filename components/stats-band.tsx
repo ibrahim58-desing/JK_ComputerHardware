@@ -3,14 +3,15 @@
 import { motion } from 'framer-motion'
 import { CountUp } from '@/components/count-up'
 
-const stats = [
-  { end: 500, suffix: '+', label: 'Products' },
-  { end: 1000, suffix: '+', label: 'Customers' },
-  { end: 5, suffix: '', label: 'Years Experience' },
-  { end: 200, suffix: '+', label: 'Repairs Done' },
-]
+const FOUNDED_YEAR = 1999
 
 export function StatsBand({ heading }: { heading?: string }) {
+  const stats = [
+    { end: FOUNDED_YEAR, suffix: '', label: 'Founded' },
+    { end: new Date().getFullYear() - FOUNDED_YEAR, suffix: '+', label: 'Years of Experience' },
+    { end: 10, suffix: '', label: 'Team Members' },
+    { end: 9, suffix: '+', label: 'Services Offered' },
+  ]
   return (
     <section className="relative overflow-hidden bg-primary py-20">
       <div

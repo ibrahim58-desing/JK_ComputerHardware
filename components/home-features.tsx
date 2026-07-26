@@ -6,24 +6,24 @@ import { RevealGroup, itemVariants } from '@/components/reveal'
 
 const features = [
   {
-    icon: Zap,
-    title: 'Top Performance',
-    desc: 'Handpicked high-speed components',
-  },
-  {
     icon: ShieldCheck,
     title: 'Genuine Products',
-    desc: '100% authentic hardware guaranteed',
+    desc: 'From trusted brands, 100% authentic',
   },
   {
-    icon: Truck,
-    title: 'Fast Delivery',
-    desc: 'Chennai & nationwide shipping',
+    icon: Zap,
+    title: 'Competitive Prices',
+    desc: 'Best value, no hidden charges',
   },
   {
     icon: Wrench,
-    title: 'Expert Support',
-    desc: 'In-store and remote assistance',
+    title: 'Expert Guidance',
+    desc: 'Qualified sales & service team',
+  },
+  {
+    icon: Truck,
+    title: 'Free Home Delivery*',
+    desc: 'Fast, reliable delivery Pan-India',
   },
 ]
 

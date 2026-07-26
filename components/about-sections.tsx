@@ -6,9 +6,9 @@ import { SectionHeading } from '@/components/section-heading'
 import { RevealGroup, itemVariants } from '@/components/reveal'
 
 const storyStats = [
-  { value: '2019', label: 'Founded' },
-  { value: '500+', label: 'Products Stocked' },
-  { value: '1000+', label: 'Builders Served' },
+  { value: '1999', label: 'Founded' },
+  { value: '10+', label: 'Team Members' },
+  { value: 'Pan-India', label: 'Service Reach' },
 ]
 
 export function OurStory() {
@@ -45,14 +45,26 @@ export function OurStory() {
             Our Story
           </span>
           <h2 className="mt-3 font-heading text-3xl font-bold text-foreground sm:text-4xl">
-            Honest hardware, built on trust.
+            From one vision to a Pan-India technology partner.
           </h2>
           <p className="mt-5 text-base leading-relaxed text-text-secondary">
-            JK was founded with one goal — to bring genuine, high-performance
-            computer hardware to customers at honest prices. We started as a
-            small shop in Chennai and grew into a trusted destination for PC
-            builders, gamers, offices, and professionals. Every product we stock
-            is handpicked for quality and value.
+            Before founding JK Infosystem, our founder spent several years
+            working in the technology industry, gaining hands-on experience,
+            deep product knowledge, and an understanding of what customers
+            truly value. Armed with expertise, perseverance, and a clear
+            vision, he built JK Infosystem from the ground up in 1999 —
+            completely bootstrapped and without external funding. What
+            started as a small venture has steadily grown into a trusted
+            technology partner serving customers across India.
+          </p>
+          <p className="mt-4 text-base leading-relaxed text-text-secondary">
+            Today, JK Infosystem operates on a Pan-India scale, delivering
+            end-to-end technology solutions across computers, laptops,
+            printers, cameras, storage devices, networking products,
+            accessories, and professional IT services. Despite our growth,
+            our founding values remain unchanged: genuine products, expert
+            guidance, dependable service, and long-lasting relationships with
+            every customer.
           </p>
         </motion.div>
       </div>
@@ -69,7 +81,7 @@ const values = [
   {
     icon: Zap,
     title: 'Performance',
-    desc: 'We stock only hardware that delivers real-world speed and value.',
+    desc: 'We deliver technology that performs — reliable, future-ready, and built to last.',
   },
   {
     icon: Heart,

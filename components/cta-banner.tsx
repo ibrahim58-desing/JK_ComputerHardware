@@ -15,7 +15,7 @@ export function CtaBanner() {
         className="mx-auto flex max-w-5xl flex-col items-center gap-6 rounded-3xl border-2 border-primary/20 bg-card px-8 py-14 text-center shadow-blue md:flex-row md:justify-between md:text-left"
       >
         <h2 className="max-w-xl font-heading text-2xl font-bold text-foreground text-balance sm:text-3xl">
-          Ready to build your dream PC? Let&apos;s make it happen.
+          Ready to experience technology without compromise? Let&apos;s make it happen.
         </h2>
         <Link
           href="/contact"

@@ -5,23 +5,23 @@ import { motion } from 'framer-motion'
 const badges = [
   {
     icon: '🛡️',
-    title: '100% Genuine Products',
-    sub: 'All items are brand-new and original',
+    title: 'Qualified Sales & Service Team',
+    sub: 'Every team member is trained and experienced',
   },
   {
     icon: '⭐',
-    title: '5 Years in Business',
-    sub: 'Trusted by 1000+ customers in Chennai',
+    title: 'Trusted Since 1999',
+    sub: 'Built on integrity, chosen by customers across India',
   },
   {
     icon: '🔧',
-    title: 'Expert Advice — Free',
-    sub: 'Get personalized build recommendations',
+    title: 'Reliable After-Sales Service',
+    sub: 'Dependable support long after your purchase',
   },
   {
     icon: '🚚',
-    title: 'Chennai & Nationwide Delivery',
-    sub: 'We ship across India with care',
+    title: 'Pan-India Sales & Support',
+    sub: 'Serving customers nationwide',
   },
 ]
 

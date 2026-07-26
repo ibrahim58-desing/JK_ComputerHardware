@@ -17,7 +17,7 @@ async function main() {
       role: 'admin',
     },
   })
-  console.log('✅ Admin user created (admin / admin123)')
+  console.log('✅ Admin user created — change the seeded password immediately after first login')
 
   // ─── Seed Categories ────────────────────────────────────────────────────────
   const categoryData = [
@@ -276,18 +276,18 @@ async function main() {
 
   // ─── Seed Site Settings ─────────────────────────────────────────────────────
   const settings = [
-    { key: 'site_name', value: 'JK Computers' },
-    { key: 'site_tagline', value: 'Power Your Build' },
-    { key: 'site_description', value: "Chennai's #1 computer hardware store" },
-    { key: 'contact_phone', value: '+91 98765 43210' },
-    { key: 'contact_email', value: 'hello@jkcomputers.in' },
-    { key: 'contact_address', value: '123, Anna Salai, Chennai, TN - 600002' },
-    { key: 'whatsapp_number', value: '919876543210' },
+    { key: 'site_name', value: 'JK Infosystem' },
+    { key: 'site_tagline', value: "Chennai's Trusted PC Hardware Destination" },
+    { key: 'site_description', value: 'Experience Technology Without Compromise.' },
+    { key: 'contact_phone', value: '[PHONE NUMBER]' },
+    { key: 'contact_email', value: '[EMAIL ADDRESS]' },
+    { key: 'contact_address', value: '[STORE ADDRESS]' },
+    { key: 'whatsapp_number', value: '[PHONE NUMBER]' },
     { key: 'instagram_url', value: '#' },
     { key: 'facebook_url', value: '#' },
     { key: 'youtube_url', value: '#' },
-    { key: 'google_maps_url', value: 'https://www.google.com/maps/search/?api=1&query=123+Anna+Salai+Chennai+Tamil+Nadu+600002' },
-    { key: 'working_hours', value: 'Monday – Saturday: 10:00 AM – 7:00 PM' },
+    { key: 'google_maps_url', value: '#' },
+    { key: 'working_hours', value: '[STORE HOURS]' },
   ]
 
   for (const s of settings) {

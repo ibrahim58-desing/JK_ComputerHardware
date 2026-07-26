@@ -9,7 +9,7 @@ const testimonials = [
   {
     name: 'Karthik S.',
     role: 'Gamer & Streamer',
-    content: "Got my full streaming rig built here. JK Computers helped me pick the right parts for 1440p gaming and streaming. Cable management was incredibly clean and the prices were the best in Chennai.",
+    content: "Got my full streaming rig built here. JK Infosystem helped me pick the right parts for 1440p gaming and streaming. Cable management was incredibly clean and the prices were the best in Chennai.",
     rating: 5,
   },
   {

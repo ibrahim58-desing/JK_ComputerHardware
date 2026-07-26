@@ -3,11 +3,14 @@
 import { motion } from 'framer-motion'
 import {
   MonitorCog,
+  Smartphone,
+  Laptop,
+  MonitorSmartphone,
+  HardDrive,
+  Settings2,
   Wrench,
   ArrowUpCircle,
   ShieldCheck,
-  PackageSearch,
-  MessagesSquare,
   Phone,
   ClipboardCheck,
   Hammer,
@@ -19,33 +22,48 @@ import { RevealGroup, itemVariants } from '@/components/reveal'
 const services = [
   {
     icon: MonitorCog,
-    title: 'Custom PC Building',
-    desc: 'We build gaming rigs, workstations, and office setups tailored to your exact budget and requirements.',
+    title: 'PC Building / Assembly',
+    desc: 'Custom-built desktops assembled to your exact budget and performance needs.',
+  },
+  {
+    icon: Smartphone,
+    title: 'Mobile & Tablet Service',
+    desc: 'Repair and support for all types of OS — Android, iOS and more — phones and tablets.',
+  },
+  {
+    icon: Laptop,
+    title: 'Laptop Services',
+    desc: 'Diagnosis, repair, and maintenance for laptops of every brand.',
+  },
+  {
+    icon: MonitorSmartphone,
+    title: 'Screen Display Replacement',
+    desc: 'Cracked or faulty screens replaced for laptops, monitors, and mobile devices.',
+  },
+  {
+    icon: HardDrive,
+    title: 'Hard Disk Recovery / Flashing',
+    desc: 'Data recovery and hard disk flashing to rescue and restore your important files.',
+  },
+  {
+    icon: Settings2,
+    title: 'OS Installations',
+    desc: 'Fresh installs, upgrades, and configuration for Windows, macOS, and more.',
   },
   {
     icon: Wrench,
     title: 'Hardware Repair',
-    desc: 'Fast diagnosis and repair for all desktop hardware issues. Transparent pricing, no hidden charges.',
+    desc: 'Fast, transparent diagnosis and repair for all computer hardware issues.',
   },
   {
     icon: ArrowUpCircle,
-    title: 'PC Upgrades',
-    desc: 'Boost your system with faster RAM, better GPU, or NVMe SSD. We handle compatibility and safe installation.',
+    title: 'Hardware Upgrades',
+    desc: 'Boost performance with RAM, storage, or GPU upgrades — handled safely and correctly.',
   },
   {
     icon: ShieldCheck,
     title: 'Warranty Support',
     desc: 'All products come with manufacturer warranty. We handle claims and replacements hassle-free.',
-  },
-  {
-    icon: PackageSearch,
-    title: 'Hardware Sourcing',
-    desc: "Can't find a specific part? We source genuine components from trusted distributors across India.",
-  },
-  {
-    icon: MessagesSquare,
-    title: 'Tech Consultation',
-    desc: 'Not sure what to buy? Our experts guide you to the right components — no pressure, just honest advice.',
   },
 ]
 

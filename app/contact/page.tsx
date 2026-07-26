@@ -8,9 +8,9 @@ import {
 } from '@/components/contact-sections'
 
 export const metadata: Metadata = {
-  title: 'Contact — JK Computers',
+  title: 'Contact — JK Infosystem',
   description:
-    'Visit us at Anna Salai Chennai, call +91 98765 43210, or send a message. JK Computers — your trusted hardware store.',
+    'Get in touch with JK Infosystem — your trusted Pan-India technology partner. Visit, call, or send us a message.',
 }
 
 export default function ContactPage() {

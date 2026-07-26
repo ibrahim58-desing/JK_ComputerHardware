@@ -33,7 +33,7 @@ const cols = [
       { label: 'PC Build', href: '/services' },
       { label: 'Repair', href: '/services' },
       { label: 'Upgrades', href: '/services' },
-      { label: 'Consultation', href: '/services' },
+      { label: 'Warranty Support', href: '/services' },
     ],
   },
 ]
@@ -46,6 +46,7 @@ const trustPills = [
 ]
 
 export function Footer() {
+  const year = new Date().getFullYear()
   return (
     <footer className="relative bg-navy text-white">
       <div
@@ -62,11 +63,11 @@ export function Footer() {
               JK
             </span>
             <p className="mt-3 font-heading text-sm tracking-wide text-blue-200/80">
-              Power Your Build.
+              Chennai&apos;s Trusted PC Hardware Destination
             </p>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/60">
-              Chennai&apos;s trusted destination for genuine, high-performance
-              computer hardware at honest prices.
+              Pan-India technology partner delivering genuine computers,
+              imaging solutions &amp; IT services since 1999.
             </p>
             <div className="mt-5 flex gap-3">
               {[InstagramIcon, FacebookIcon, YoutubeIcon].map((Icon, i) => (
@@ -110,24 +111,24 @@ export function Footer() {
             <ul className="mt-4 space-y-3 text-sm text-white/60">
               <li className="flex gap-2.5">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
-                <span>123, Anna Salai, Chennai, TN - 600002</span>
+                <span>[STORE ADDRESS]</span>
               </li>
               <li className="flex gap-2.5">
                 <Phone size={16} className="mt-0.5 shrink-0 text-primary" />
-                <span>+91 98765 43210</span>
+                <span>[PHONE NUMBER]</span>
               </li>
               <li className="flex gap-2.5">
                 <MessageCircle size={16} className="mt-0.5 shrink-0" style={{ color: '#25D366' }} />
-                <span>+91 98765 43210 (WhatsApp)</span>
+                <span>[PHONE NUMBER] (WhatsApp)</span>
               </li>
               <li className="flex gap-2.5">
                 <Mail size={16} className="mt-0.5 shrink-0 text-primary" />
-                <span>hello@jkcomputers.in</span>
+                <span>[EMAIL ADDRESS]</span>
               </li>
             </ul>
 
             <a
-              href="https://www.google.com/maps/search/?api=1&query=123+Anna+Salai+Chennai+Tamil+Nadu+600002"
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/40 px-5 py-2 text-sm font-semibold text-white transition-all hover:border-white hover:bg-white/10"
@@ -150,7 +151,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-white/10 pt-6 text-center text-sm text-white/50">
-          © 2025 JK Computers. All rights reserved. · Made in Chennai 🇮🇳
+          © {year} JK Infosystem. All rights reserved. · Made in Chennai 🇮🇳
         </div>
       </div>
     </footer>

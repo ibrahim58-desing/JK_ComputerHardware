@@ -19,10 +19,10 @@ import {
 } from '@/components/social-icons'
 
 const info = [
-  { icon: MapPin, text: '123, Anna Salai, Chennai, Tamil Nadu - 600002' },
-  { icon: Phone, text: '+91 98765 43210' },
-  { icon: Mail, text: 'hello@jkcomputers.in' },
-  { icon: Clock, text: 'Monday – Saturday: 10:00 AM – 7:00 PM' },
+  { icon: MapPin, text: '[STORE ADDRESS]' },
+  { icon: Phone, text: '[PHONE NUMBER]' },
+  { icon: Mail, text: '[EMAIL ADDRESS]' },
+  { icon: Clock, text: '[STORE HOURS]' },
 ]
 
 export function ContactInfo() {
@@ -47,14 +47,14 @@ export function ContactInfo() {
       {/* Action Buttons */}
       <div className="grid gap-3 sm:grid-cols-2">
         <a
-          href="tel:+919876543210"
+          href="tel:[PHONE NUMBER]"
           className="flex items-center justify-center gap-2 rounded-xl border-2 border-primary bg-primary px-5 py-3.5 font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
         >
           <Phone size={18} />
           Call Now
         </a>
         <a
-          href="https://wa.me/919876543210"
+          href="https://wa.me/[PHONE NUMBER]"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 font-semibold text-white transition-transform hover:scale-[1.02]"
@@ -66,7 +66,7 @@ export function ContactInfo() {
       </div>
 
       <a
-        href="https://www.google.com/maps/search/?api=1&query=123+Anna+Salai+Chennai+Tamil+Nadu+600002"
+        href="#"
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center justify-center gap-2 rounded-xl border-2 border-primary px-5 py-3.5 font-semibold text-primary transition-all hover:bg-primary hover:text-primary-foreground"
@@ -104,7 +104,7 @@ export function MapSection() {
           className="mt-10 overflow-hidden rounded-3xl border border-card-border shadow-blue"
         >
           <iframe
-            title="JK Computers location on map"
+            title="JK Infosystem location on map"
             src="https://www.openstreetmap.org/export/embed.html?bbox=80.24%2C13.05%2C80.29%2C13.09&layer=mapnik&marker=13.0707%2C80.2609"
             className="h-[420px] w-full"
             style={{ filter: 'hue-rotate(180deg) saturate(0.85) contrast(0.95)' }}
@@ -119,7 +119,7 @@ export function MapSection() {
 const faqs = [
   {
     q: 'Do you offer home delivery?',
-    a: 'Yes, we deliver across Chennai and ship nationwide.',
+    a: 'Yes, we offer free home delivery* and ship Pan-India.',
   },
   {
     q: 'Are your products original and warranted?',
@@ -130,8 +130,8 @@ const faqs = [
     a: 'Usually 1–2 business days depending on parts.',
   },
   {
-    q: 'Do you do laptop repairs?',
-    a: 'We focus on desktop hardware. Contact us for specifics.',
+    q: 'Do you repair laptops and mobile devices?',
+    a: 'Yes — we service laptops, mobile phones, and tablets across all major OS platforms, in addition to desktop hardware.',
   },
 ]
 

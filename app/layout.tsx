@@ -19,15 +19,16 @@ const jetbrains = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'JK Computers — Power Your Build | Chennai',
+  title: 'JK Infosystem — Experience Technology Without Compromise',
   description:
-    "Chennai's #1 computer hardware store. Genuine CPUs, GPUs, RAM, storage, monitors & peripherals at honest prices. Custom PC builds, repairs & expert advice.",
+    'From premium computers and professional imaging solutions to enterprise-grade IT services, JK Infosystem delivers authentic technology, trusted expertise, and exceptional service — Pan-India, since 1999.',
   generator: 'v0.app',
   keywords: [
-    'computer hardware Chennai',
-    'PC build Chennai',
-    'GPU CPU store India',
-    'JK Computers',
+    'JK Infosystem',
+    'computer hardware India',
+    'IT services India',
+    'imaging solutions',
+    'PC build India',
   ],
 }
 

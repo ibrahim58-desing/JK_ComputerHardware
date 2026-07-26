@@ -7,9 +7,9 @@ import { CtaBanner } from '@/components/cta-banner'
 import { prisma } from '@/lib/prisma'
 
 export const metadata: Metadata = {
-  title: 'Products — JK Computers',
+  title: 'Products — JK Infosystem',
   description:
-    'Browse our full range of genuine computer hardware — CPUs, GPUs, RAM, storage, monitors, keyboards and mice at honest prices in Chennai.',
+    'Browse our full range of genuine computer hardware — CPUs, GPUs, RAM, storage, monitors, keyboards and mice at honest, competitive prices.',
 }
 
 export default async function ProductsPage() {

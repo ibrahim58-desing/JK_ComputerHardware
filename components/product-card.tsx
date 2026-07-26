@@ -14,7 +14,7 @@ import { itemVariants } from '@/components/reveal'
 export function ProductCard({ product }: { product: Product }) {
   const Icon = categoryIcons[product.category as keyof typeof categoryIcons]
   const waMessage = encodeURIComponent(
-    `Hi JK Computers! I am interested in buying ${product.name}. Please share availability and details.`
+    `Hi JK Infosystem! I am interested in buying ${product.name}. Please share availability and details.`
   )
   return (
     <motion.div variants={itemVariants} layout className="h-full">
@@ -70,7 +70,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         <a
-          href={`https://wa.me/919876543210?text=${waMessage}`}
+          href={`https://wa.me/[PHONE NUMBER]?text=${waMessage}`}
           target="_blank"
           rel="noopener noreferrer"
           className="relative z-10 mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg"

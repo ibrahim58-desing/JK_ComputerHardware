@@ -8,17 +8,17 @@ import { RevealGroup, itemVariants } from '@/components/reveal'
 const services = [
   {
     icon: '🖥️',
-    title: 'Custom PC Building',
+    title: 'PC Building & Assembly',
     desc: 'We assemble the perfect PC for your budget.',
   },
   {
-    icon: '🔧',
-    title: 'Hardware Repair',
-    desc: 'Fast and affordable repair for all desktop issues.',
+    icon: '📱',
+    title: 'Laptop & Mobile Repair',
+    desc: 'Fast, affordable repair for laptops, phones & tablets.',
   },
   {
     icon: '⬆️',
-    title: 'Upgrades & Consultation',
+    title: 'Hardware Upgrades',
     desc: 'Boost your current system with expert guidance.',
   },
 ]

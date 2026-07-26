@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sc query *)",
+      "Bash(PGPASSWORD=12345 psql -U postgres -h localhost -p 5432 -l)",
+      "Bash(PGPASSWORD=12345 psql -U postgres -h localhost -p 5432 -d jk_computers -c \"\\\\dt\")",
+      "Bash(PGPASSWORD=12345 psql -U postgres -h localhost -p 5432 -d jk_computers -c \"SELECT 'admins' t, count\\(*\\) FROM admins UNION ALL SELECT 'categories', count\\(*\\) FROM categories UNION ALL SELECT 'products', count\\(*\\) FROM products UNION ALL SELECT 'enquiries', count\\(*\\) FROM enquiries;\")"
+    ]
+  }
+}

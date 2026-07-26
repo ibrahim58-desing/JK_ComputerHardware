@@ -47,7 +47,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   const Icon = categoryIcons[product.category as keyof typeof categoryIcons] || categoryIcons['CPU']
   const waMessage = encodeURIComponent(
-    `Hi JK Computers! I am interested in buying ${product.name}. Please share availability and details.`
+    `Hi JK Infosystem! I am interested in buying ${product.name}. Please share availability and details.`
   )
 
   const relatedDbProducts = await prisma.product.findMany({
@@ -143,7 +143,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a
-                  href={`https://wa.me/919876543210?text=${waMessage}`}
+                  href={`https://wa.me/[PHONE NUMBER]?text=${waMessage}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl px-8 py-4 text-base font-bold text-white transition-all hover:scale-[1.02] hover:shadow-lg"

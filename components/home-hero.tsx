@@ -6,7 +6,7 @@ import { Sparkles, ArrowRight } from 'lucide-react'
 import { HeroCanvas } from '@/components/hero-canvas'
 
 
-const headlineWords = ['Power', 'Your', 'Build.']
+const headlineWords = ['Experience', 'Technology', 'Without', 'Compromise.']
 
 export function HomeHero() {
   return (
@@ -32,7 +32,7 @@ export function HomeHero() {
             className="inline-flex animate-pulse-soft items-center gap-2 rounded-full border border-white/30 px-4 py-1.5 text-sm font-medium text-white"
           >
             <Sparkles size={15} />
-            Chennai&apos;s #1 Hardware Store
+            Trusted Technology Partner Since 1999
           </motion.span>
 
           <h1 className="mt-6 font-heading text-5xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
@@ -42,7 +42,7 @@ export function HomeHero() {
                 initial={{ opacity: 0, y: 28 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className={`mr-3 inline-block ${i === 2 ? 'text-blue-200' : ''}`}
+                className={`mr-3 inline-block ${i === headlineWords.length - 1 ? 'text-blue-200' : ''}`}
               >
                 {w}
               </motion.span>
@@ -55,8 +55,10 @@ export function HomeHero() {
             transition={{ delay: 0.55, duration: 0.5 }}
             className="mt-6 max-w-xl text-lg leading-relaxed text-white/80"
           >
-            Premium computer hardware at honest prices. Genuine products. Expert
-            advice. Fast delivery.
+            From premium computers and professional imaging solutions to
+            enterprise-grade IT services, JK Infosystem delivers authentic
+            technology, trusted expertise, and exceptional service — all under
+            one roof.
           </motion.p>
 
           <motion.p
@@ -67,7 +69,7 @@ export function HomeHero() {
           >
             <span>✓ Genuine Products</span>
             <span>·</span>
-            <span>✓ Chennai&apos;s Trusted Hardware Store</span>
+            <span>✓ Pan-India Technology Partner</span>
             <span>·</span>
             <span>✓ Expert Advice</span>
           </motion.p>
@@ -86,7 +88,7 @@ export function HomeHero() {
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <a
-              href="https://wa.me/919876543210?text=Hi%20JK%20Computers!%20I%20would%20like%20to%20place%20an%20order.%20Please%20share%20details."
+              href="https://wa.me/[PHONE NUMBER]?text=Hi%20JK%20Infosystem!%20I%20would%20like%20to%20place%20an%20order.%20Please%20share%20details."
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full border border-white/60 px-7 py-3.5 font-semibold text-white transition-all hover:border-white hover:shadow-[0_0_24px_rgba(255,255,255,0.35)]"
@@ -101,7 +103,7 @@ export function HomeHero() {
             transition={{ delay: 0.9 }}
             className="mt-10 font-mono text-sm text-white/70"
           >
-            1000+ Happy Customers · 500+ Products · 5 Years in Chennai
+            Trusted Since 1999 · Pan-India Service · Computers, Imaging &amp; IT Solutions
           </motion.p>
         </div>
 
