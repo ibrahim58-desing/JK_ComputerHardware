@@ -279,15 +279,18 @@ async function main() {
     { key: 'site_name', value: 'JK Infosystem' },
     { key: 'site_tagline', value: "Chennai's Trusted PC Hardware Destination" },
     { key: 'site_description', value: 'Experience Technology Without Compromise.' },
-    { key: 'contact_phone', value: '[PHONE NUMBER]' },
-    { key: 'contact_email', value: '[EMAIL ADDRESS]' },
-    { key: 'contact_address', value: '[STORE ADDRESS]' },
-    { key: 'whatsapp_number', value: '[PHONE NUMBER]' },
-    { key: 'instagram_url', value: '#' },
-    { key: 'facebook_url', value: '#' },
-    { key: 'youtube_url', value: '#' },
-    { key: 'google_maps_url', value: '#' },
-    { key: 'working_hours', value: '[STORE HOURS]' },
+    // Left blank on purpose — fill these in from the admin Settings page.
+    // The frontend falls back to "coming soon" copy and hides dead links
+    // until real values are set, instead of shipping placeholder text.
+    { key: 'contact_phone', value: '' },
+    { key: 'contact_email', value: '' },
+    { key: 'contact_address', value: '' },
+    { key: 'whatsapp_number', value: '' },
+    { key: 'instagram_url', value: '' },
+    { key: 'facebook_url', value: '' },
+    { key: 'youtube_url', value: '' },
+    { key: 'google_maps_url', value: '' },
+    { key: 'working_hours', value: '' },
   ]
 
   for (const s of settings) {

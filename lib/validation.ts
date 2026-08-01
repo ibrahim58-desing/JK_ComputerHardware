@@ -14,7 +14,6 @@ export const createProductSchema = z.object({
   description: z.string().default(''),
   shortDescription: z.string().max(500).default(''),
   price: z.string().min(1, 'Price is required'),
-  numericPrice: z.number().min(0, 'Price must be positive'),
   stock: z.number().int().min(0).default(0),
   brand: z.string().max(100).default(''),
   specs: z.array(z.string()).default([]),
@@ -53,6 +52,19 @@ export const createEnquirySchema = z.object({
   productId: z.number().int().positive().nullable().optional(),
 })
 
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+
+export const createTestimonialSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  role: z.string().max(100).default(''),
+  content: z.string().min(1, 'Testimonial text is required').max(1000),
+  rating: z.number().int().min(1).max(5).default(5),
+  status: z.enum(['active', 'inactive']).default('active'),
+  displayOrder: z.number().int().default(0),
+})
+
+export const updateTestimonialSchema = createTestimonialSchema.partial()
+
 // ─── Site Settings ────────────────────────────────────────────────────────────
 
 const ALLOWED_SETTING_KEYS = [
@@ -69,6 +81,7 @@ const ALLOWED_SETTING_KEYS = [
   'google_maps_url',
   'working_hours',
   'homepage_categories',
+  'top_products',
 ] as const
 
 export const updateSettingsSchema = z

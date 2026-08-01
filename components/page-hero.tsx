@@ -53,7 +53,6 @@ export function PageHero({
             animate={{ width: 72 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mx-auto mt-5 h-1 rounded-full bg-primary"
-            style={{ boxShadow: '0 0 14px rgba(0,87,255,0.6)' }}
           />
         )}
         <motion.p

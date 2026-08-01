@@ -6,6 +6,7 @@ import { categoryIcons, badgeClasses } from '@/lib/products'
 import { PageHero } from '@/components/page-hero'
 import { ProductCard } from '@/components/product-card'
 import { prisma } from '@/lib/prisma'
+import { getSiteSettings, whatsappHref } from '@/lib/settings'
 
 export async function generateStaticParams() {
   const products = await prisma.product.findMany({
@@ -18,7 +19,8 @@ export async function generateStaticParams() {
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
-  
+  const settings = await getSiteSettings()
+
   const productData = await prisma.product.findUnique({
     where: { id: parseInt(resolvedParams.id, 10) },
     include: { 
@@ -46,9 +48,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   }
 
   const Icon = categoryIcons[product.category as keyof typeof categoryIcons] || categoryIcons['CPU']
-  const waMessage = encodeURIComponent(
-    `Hi JK Infosystem! I am interested in buying ${product.name}. Please share availability and details.`
-  )
+  const waMessage = `Hi JK Infosystem! I am interested in buying ${product.name}. Please share availability and details.`
 
   const relatedDbProducts = await prisma.product.findMany({
     where: { 
@@ -143,7 +143,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a
-                  href={`https://wa.me/[PHONE NUMBER]?text=${waMessage}`}
+                  href={whatsappHref(settings.whatsapp_number, waMessage)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl px-8 py-4 text-base font-bold text-white transition-all hover:scale-[1.02] hover:shadow-lg"
@@ -177,7 +177,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {relatedProducts.map((p) => (
-                <ProductCard key={p.id} product={p as any} />
+                <ProductCard key={p.id} product={p as any} whatsappNumber={settings.whatsapp_number} />
               ))}
             </div>
           </div>

@@ -10,12 +10,11 @@ import {
   badgeClasses,
 } from '@/lib/products'
 import { itemVariants } from '@/components/reveal'
+import { whatsappHref } from '@/lib/settings'
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, whatsappNumber = '' }: { product: Product; whatsappNumber?: string }) {
   const Icon = categoryIcons[product.category as keyof typeof categoryIcons]
-  const waMessage = encodeURIComponent(
-    `Hi JK Infosystem! I am interested in buying ${product.name}. Please share availability and details.`
-  )
+  const waMessage = `Hi JK Infosystem! I am interested in buying ${product.name}. Please share availability and details.`
   return (
     <motion.div variants={itemVariants} layout className="h-full">
       <TiltCard
@@ -70,7 +69,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         <a
-          href={`https://wa.me/[PHONE NUMBER]?text=${waMessage}`}
+          href={whatsappHref(whatsappNumber, waMessage)}
           target="_blank"
           rel="noopener noreferrer"
           className="relative z-10 mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg"

@@ -6,6 +6,7 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { FloatingButtons } from '@/components/floating-buttons'
 import { PageTransition } from '@/components/page-transition'
+import { getSiteSettings } from '@/lib/settings'
 
 const inter = Inter({ variable: '--font-inter', subsets: ['latin'] })
 const orbitron = Orbitron({
@@ -22,7 +23,6 @@ export const metadata: Metadata = {
   title: 'JK Infosystem — Experience Technology Without Compromise',
   description:
     'From premium computers and professional imaging solutions to enterprise-grade IT services, JK Infosystem delivers authentic technology, trusted expertise, and exceptional service — Pan-India, since 1999.',
-  generator: 'v0.app',
   keywords: [
     'JK Infosystem',
     'computer hardware India',
@@ -47,6 +47,7 @@ export default async function RootLayout({
   const headersList = await headers()
   const pathname = headersList.get('x-pathname') || ''
   const isAdmin = pathname.startsWith('/admin')
+  const settings = isAdmin ? null : await getSiteSettings()
 
   return (
     <html
@@ -62,8 +63,8 @@ export default async function RootLayout({
         ) : (
           <main>{children}</main>
         )}
-        {!isAdmin && <Footer />}
-        {!isAdmin && <FloatingButtons />}
+        {settings && <Footer settings={settings} />}
+        {settings && <FloatingButtons whatsappNumber={settings.whatsapp_number} />}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

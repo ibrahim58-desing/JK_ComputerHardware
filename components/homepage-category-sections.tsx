@@ -76,7 +76,7 @@ function CarouselSection({ section }: { section: CategorySection }) {
             >
               <Link 
                 href={`/products/${product.id}`}
-                className="group block relative overflow-hidden rounded-2xl bg-card border border-card-border p-4 transition-all hover:border-primary hover:shadow-[0_0_30px_rgba(0,87,255,0.15)] h-full"
+                className="group block relative overflow-hidden rounded-2xl bg-card border border-card-border p-4 transition-all hover:border-primary hover:shadow-blue-lg h-full"
               >
                 <div className="relative aspect-square overflow-hidden rounded-xl bg-surface mb-4">
                   {product.image && product.image !== '/placeholder.jpg' ? (

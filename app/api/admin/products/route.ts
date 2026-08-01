@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createProductSchema } from '@/lib/validation'
+import { parsePriceToNumber } from '@/lib/utils'
 import { verifyAuth } from '@/lib/auth'
 import { applyRateLimit } from '@/lib/api-helpers'
 import { RATE_LIMITS } from '@/lib/rate-limit'
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
         description: data.description,
         shortDescription: data.shortDescription,
         price: data.price,
-        numericPrice: data.numericPrice,
+        numericPrice: parsePriceToNumber(data.price),
         stock: data.stock,
         brand: data.brand,
         specs: data.specs as any,

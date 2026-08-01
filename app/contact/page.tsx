@@ -6,6 +6,7 @@ import {
   MapSection,
   FaqSection,
 } from '@/components/contact-sections'
+import { getSiteSettings } from '@/lib/settings'
 
 export const metadata: Metadata = {
   title: 'Contact — JK Infosystem',
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
     'Get in touch with JK Infosystem — your trusted Pan-India technology partner. Visit, call, or send us a message.',
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getSiteSettings()
   return (
     <>
       <PageHero
@@ -23,7 +25,7 @@ export default function ContactPage() {
       />
       <section className="bg-background px-5 py-20 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2">
-          <ContactInfo />
+          <ContactInfo settings={settings} />
           <ContactForm />
         </div>
       </section>

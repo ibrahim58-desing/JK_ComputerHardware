@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { updateProductSchema } from '@/lib/validation'
+import { parsePriceToNumber } from '@/lib/utils'
 import { verifyAuth } from '@/lib/auth'
 import {
   successResponse,
@@ -63,9 +64,10 @@ export async function PUT(
     if (data.description !== undefined) updateData.description = data.description
     if (data.shortDescription !== undefined)
       updateData.shortDescription = data.shortDescription
-    if (data.price !== undefined) updateData.price = data.price
-    if (data.numericPrice !== undefined)
-      updateData.numericPrice = data.numericPrice
+    if (data.price !== undefined) {
+      updateData.price = data.price
+      updateData.numericPrice = parsePriceToNumber(data.price)
+    }
     if (data.stock !== undefined) updateData.stock = data.stock
     if (data.brand !== undefined) updateData.brand = data.brand
     if (data.specs !== undefined) updateData.specs = data.specs

@@ -44,7 +44,6 @@ export function SectionHeading({
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
           className={`mt-4 h-1 rounded-full bg-primary ${align === 'center' ? 'mx-auto' : ''}`}
-          style={{ boxShadow: '0 0 12px rgba(0,87,255,0.6)' }}
         />
       )}
       {description && (

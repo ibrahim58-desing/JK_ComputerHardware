@@ -5,6 +5,7 @@ import { ProductsExplorer } from '@/components/products-explorer'
 import { CtaBanner } from '@/components/cta-banner'
 
 import { prisma } from '@/lib/prisma'
+import { getSiteSettings } from '@/lib/settings'
 
 export const metadata: Metadata = {
   title: 'Products — JK Infosystem',
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ProductsPage() {
+  const settings = await getSiteSettings()
   const [products, categories] = await Promise.all([
     prisma.product.findMany({
       where: { 
@@ -40,7 +42,7 @@ export default async function ProductsPage() {
         variant="white"
       />
       <ProductBanner />
-      <ProductsExplorer initialProducts={formattedProducts as any} />
+      <ProductsExplorer initialProducts={formattedProducts as any} whatsappNumber={settings.whatsapp_number} />
       <CtaBanner />
     </>
   )

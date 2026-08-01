@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Sparkles, ArrowRight } from 'lucide-react'
-import { HeroCanvas } from '@/components/hero-canvas'
+import { whatsappHref } from '@/lib/settings'
 
 
 const headlineWords = ['Experience', 'Technology', 'Without', 'Compromise.']
 
-export function HomeHero() {
+export function HomeHero({ whatsappNumber }: { whatsappNumber: string }) {
   return (
     <section className="relative flex min-h-screen items-center overflow-hidden bg-primary pt-16">
       {/* circuit grid overlay */}
@@ -21,7 +21,6 @@ export function HomeHero() {
           backgroundSize: '54px 54px',
         }}
       />
-      <HeroCanvas />
 
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center justify-center px-5 py-20 text-center lg:px-8">
         <div className="flex flex-col items-center">
@@ -88,7 +87,7 @@ export function HomeHero() {
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <a
-              href="https://wa.me/[PHONE NUMBER]?text=Hi%20JK%20Infosystem!%20I%20would%20like%20to%20place%20an%20order.%20Please%20share%20details."
+              href={whatsappHref(whatsappNumber, 'Hi JK Infosystem! I would like to place an order. Please share details.')}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full border border-white/60 px-7 py-3.5 font-semibold text-white transition-all hover:border-white hover:shadow-[0_0_24px_rgba(255,255,255,0.35)]"

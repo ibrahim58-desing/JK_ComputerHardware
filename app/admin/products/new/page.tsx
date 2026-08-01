@@ -17,7 +17,6 @@ export default function AddProductPage() {
     name: '',
     brand: '',
     price: '',
-    numericPrice: 0,
     categoryId: '',
     stock: 0,
     status: 'active',
@@ -174,11 +173,8 @@ export default function AddProductPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">Display Price (e.g. ₹42,999)</label>
-              <input type="text" name="price" required value={formData.price} onChange={handleChange} className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Numeric Price (for filtering)</label>
-              <input type="number" name="numericPrice" required min="0" value={formData.numericPrice} onChange={handleChange} className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+              <input type="text" name="price" required value={formData.price} onChange={handleChange} placeholder="₹42,999" className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+              <p className="mt-1 text-xs text-text-secondary">The price range filter on the Products page uses the numbers in this field automatically.</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">Category</label>

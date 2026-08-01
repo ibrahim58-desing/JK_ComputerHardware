@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUp, MessageCircle } from 'lucide-react'
+import { whatsappHref } from '@/lib/settings'
 
-export function FloatingButtons() {
+export function FloatingButtons({ whatsappNumber }: { whatsappNumber: string }) {
   const [showTop, setShowTop] = useState(false)
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export function FloatingButtons() {
       </AnimatePresence>
 
       <a
-        href="https://wa.me/[PHONE NUMBER]"
+        href={whatsappHref(whatsappNumber)}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"

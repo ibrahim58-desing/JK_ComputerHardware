@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Package,
   FolderTree,
+  Quote,
   Settings,
   LogOut,
   Menu,
@@ -18,6 +19,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: FolderTree },
+  { name: 'Testimonials', href: '/admin/testimonials', icon: Quote },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 

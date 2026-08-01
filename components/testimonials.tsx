@@ -5,28 +5,17 @@ import { Star } from 'lucide-react'
 import { SectionHeading } from '@/components/section-heading'
 import { RevealGroup, itemVariants } from '@/components/reveal'
 
-const testimonials = [
-  {
-    name: 'Karthik S.',
-    role: 'Gamer & Streamer',
-    content: "Got my full streaming rig built here. JK Infosystem helped me pick the right parts for 1440p gaming and streaming. Cable management was incredibly clean and the prices were the best in Chennai.",
-    rating: 5,
-  },
-  {
-    name: 'Priya R.',
-    role: 'Video Editor',
-    content: "I needed a workstation that could handle 4K Premiere Pro timelines without stuttering. They recommended the i9-13900K and 64GB DDR5. Runs flawlessly. 10/10 for honest advice.",
-    rating: 5,
-  },
-  {
-    name: 'Vignesh M.',
-    role: 'Software Developer',
-    content: "Ordered a Keychron K8 Pro and a new UltraWide monitor via WhatsApp. Smooth transaction and it was delivered to my house the very next day. Excellent service.",
-    rating: 5,
-  },
-]
+type Testimonial = {
+  id: number
+  name: string
+  role: string
+  content: string
+  rating: number
+}
 
-export function Testimonials() {
+export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
+  if (!testimonials.length) return null
+
   return (
     <section className="bg-background px-5 py-20 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -40,7 +29,7 @@ export function Testimonials() {
         <RevealGroup className="mt-14 grid gap-8 md:grid-cols-3">
           {testimonials.map((t) => (
             <motion.div
-              key={t.name}
+              key={t.id}
               variants={itemVariants}
               className="relative flex flex-col rounded-3xl border border-card-border bg-card p-8 shadow-blue"
             >

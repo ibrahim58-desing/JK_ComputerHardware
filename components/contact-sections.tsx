@@ -17,15 +17,21 @@ import {
   FacebookIcon,
   YoutubeIcon,
 } from '@/components/social-icons'
+import { type SiteSettings, whatsappHref, telHref } from '@/lib/settings'
 
-const info = [
-  { icon: MapPin, text: '[STORE ADDRESS]' },
-  { icon: Phone, text: '[PHONE NUMBER]' },
-  { icon: Mail, text: '[EMAIL ADDRESS]' },
-  { icon: Clock, text: '[STORE HOURS]' },
-]
+export function ContactInfo({ settings }: { settings: SiteSettings }) {
+  const info = [
+    { icon: MapPin, text: settings.contact_address || 'Address coming soon' },
+    { icon: Phone, text: settings.contact_phone || 'Phone coming soon' },
+    { icon: Mail, text: settings.contact_email || 'Email coming soon' },
+    { icon: Clock, text: settings.working_hours || 'Hours coming soon' },
+  ]
+  const socialLinks = [
+    { Icon: InstagramIcon, href: settings.instagram_url },
+    { Icon: FacebookIcon, href: settings.facebook_url },
+    { Icon: YoutubeIcon, href: settings.youtube_url },
+  ]
 
-export function ContactInfo() {
   return (
     <div className="flex flex-col gap-6">
       <ul className="space-y-4">
@@ -47,14 +53,14 @@ export function ContactInfo() {
       {/* Action Buttons */}
       <div className="grid gap-3 sm:grid-cols-2">
         <a
-          href="tel:[PHONE NUMBER]"
+          href={telHref(settings.contact_phone)}
           className="flex items-center justify-center gap-2 rounded-xl border-2 border-primary bg-primary px-5 py-3.5 font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
         >
           <Phone size={18} />
           Call Now
         </a>
         <a
-          href="https://wa.me/[PHONE NUMBER]"
+          href={whatsappHref(settings.whatsapp_number)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 font-semibold text-white transition-transform hover:scale-[1.02]"
@@ -66,9 +72,9 @@ export function ContactInfo() {
       </div>
 
       <a
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
+        href={settings.google_maps_url || '#'}
+        target={settings.google_maps_url ? '_blank' : undefined}
+        rel={settings.google_maps_url ? 'noopener noreferrer' : undefined}
         className="flex items-center justify-center gap-2 rounded-xl border-2 border-primary px-5 py-3.5 font-semibold text-primary transition-all hover:bg-primary hover:text-primary-foreground"
       >
         <Navigation size={18} />
@@ -76,10 +82,12 @@ export function ContactInfo() {
       </a>
 
       <div className="flex gap-3">
-        {[InstagramIcon, FacebookIcon, YoutubeIcon].map((Icon, i) => (
+        {socialLinks.map(({ Icon, href }, i) => (
           <a
             key={i}
-            href="#"
+            href={href || '#'}
+            target={href ? '_blank' : undefined}
+            rel={href ? 'noopener noreferrer' : undefined}
             aria-label="Social link"
             className="flex h-11 w-11 items-center justify-center rounded-full border border-card-border bg-card text-text-secondary transition-all hover:scale-110 hover:border-primary hover:text-primary"
           >

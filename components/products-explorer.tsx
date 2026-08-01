@@ -10,7 +10,13 @@ type PriceFilter = 'All' | 'Under ₹10k' | '₹10k - ₹30k' | 'Above ₹30k'
 
 const priceFilters: PriceFilter[] = ['All', 'Under ₹10k', '₹10k - ₹30k', 'Above ₹30k']
 
-export function ProductsExplorer({ initialProducts }: { initialProducts: Product[] }) {
+export function ProductsExplorer({
+  initialProducts,
+  whatsappNumber = '',
+}: {
+  initialProducts: Product[]
+  whatsappNumber?: string
+}) {
   const [activeCategory, setActiveCategory] = useState<string>('All')
   const [activeBrand, setActiveBrand] = useState<string>('All')
   const [activePrice, setActivePrice] = useState<PriceFilter>('All')
@@ -64,7 +70,7 @@ export function ProductsExplorer({ initialProducts }: { initialProducts: Product
           <div className="rounded-3xl border border-white/10 bg-card/30 p-6 shadow-2xl backdrop-blur-xl">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 text-primary shadow-[0_0_15px_rgba(0,87,255,0.2)]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 text-primary">
                   <SlidersHorizontal size={20} />
                 </div>
                 <h2 className="font-heading text-lg font-bold text-foreground">Filters</h2>
@@ -94,7 +100,7 @@ export function ProductsExplorer({ initialProducts }: { initialProducts: Product
                       onClick={() => setActiveCategory(f)}
                       className={`text-left rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
                         activeCategory === f
-                          ? 'bg-primary text-white shadow-[0_0_20px_rgba(0,87,255,0.35)]'
+                          ? 'bg-primary text-white'
                           : 'bg-white/5 border border-transparent text-text-secondary hover:bg-white/10 hover:text-foreground hover:border-white/10'
                       }`}
                     >
@@ -117,7 +123,7 @@ export function ProductsExplorer({ initialProducts }: { initialProducts: Product
                       onClick={() => setActiveBrand(b)}
                       className={`text-left rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
                         activeBrand === b
-                          ? 'bg-primary text-white shadow-[0_0_20px_rgba(0,87,255,0.35)]'
+                          ? 'bg-primary text-white'
                           : 'bg-white/5 border border-transparent text-text-secondary hover:bg-white/10 hover:text-foreground hover:border-white/10'
                       }`}
                     >
@@ -140,7 +146,7 @@ export function ProductsExplorer({ initialProducts }: { initialProducts: Product
                       onClick={() => setActivePrice(p)}
                       className={`text-left rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
                         activePrice === p
-                          ? 'bg-primary text-white shadow-[0_0_20px_rgba(0,87,255,0.35)]'
+                          ? 'bg-primary text-white'
                           : 'bg-white/5 border border-transparent text-text-secondary hover:bg-white/10 hover:text-foreground hover:border-white/10'
                       }`}
                     >
@@ -184,7 +190,7 @@ export function ProductsExplorer({ initialProducts }: { initialProducts: Product
                 </p>
                 <button
                   onClick={clearAllFilters}
-                  className="relative z-10 mt-8 rounded-full border border-primary/50 bg-primary/10 px-8 py-3 text-sm font-bold text-primary shadow-[0_0_20px_rgba(0,87,255,0.2)] transition-all hover:bg-primary hover:text-white"
+                  className="relative z-10 mt-8 rounded-full border border-primary/50 bg-primary/10 px-8 py-3 text-sm font-bold text-primary transition-all hover:bg-primary hover:text-white"
                 >
                   Clear all filters
                 </button>
@@ -204,7 +210,7 @@ export function ProductsExplorer({ initialProducts }: { initialProducts: Product
                       exit={{ opacity: 0, scale: 0.9 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <ProductCard product={p} />
+                      <ProductCard product={p} whatsappNumber={whatsappNumber} />
                     </motion.div>
                   ))}
                 </AnimatePresence>

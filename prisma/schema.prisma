@@ -97,6 +97,23 @@ model Enquiry {
   @@map("enquiries")
 }
 
+// ─── Testimonials ───────────────────────────────────────────────────────────────
+
+model Testimonial {
+  id           Int      @id @default(autoincrement())
+  name         String
+  role         String   @default("")
+  content      String
+  rating       Int      @default(5)
+  status       String   @default("active") // active | inactive
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("testimonials")
+}
+
 // ─── Site Settings ──────────────────────────────────────────────────────────────
 
 model SiteSetting {
