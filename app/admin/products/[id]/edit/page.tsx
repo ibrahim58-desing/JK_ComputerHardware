@@ -5,19 +5,25 @@ import { adminFetch } from '@/lib/admin-fetch'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Save, Loader2, Upload, Trash2, Image as ImageIcon } from 'lucide-react'
+import { Toast, useToast } from '@/components/ui/toast'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
+  const { toast, showToast, hideToast } = useToast()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [categories, setCategories] = useState<any[]>([])
   const [product, setProduct] = useState<any>(null)
-  
+  const [imageToDelete, setImageToDelete] = useState<number | null>(null)
+  const [deletingImage, setDeletingImage] = useState(false)
+
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
     price: '',
+    originalPrice: '',
     categoryId: '',
     stock: 0,
     status: 'active',
@@ -25,6 +31,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     shortDescription: '',
     description: '',
     specs: '',
+    offer: '',
   })
 
   const [uploading, setUploading] = useState(false)
@@ -41,6 +48,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           name: prod.data.name,
           brand: prod.data.brand || '',
           price: prod.data.price,
+          originalPrice: prod.data.originalPrice || '',
           categoryId: prod.data.categoryId.toString(),
           stock: prod.data.stock,
           status: prod.data.status,
@@ -48,6 +56,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           shortDescription: prod.data.shortDescription || '',
           description: prod.data.description || '',
           specs: Array.isArray(prod.data.specs) ? prod.data.specs.join(', ') : '',
+          offer: prod.data.offer || '',
         })
       }
       setLoading(false)
@@ -73,12 +82,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
       const data = await res.json()
       if (data.success) {
-        alert('Product updated successfully')
+        showToast('success', 'Product updated successfully')
       } else {
-        alert(data.error || 'Failed to update product')
+        showToast('error', data.error || 'Failed to update product')
       }
     } catch (error) {
-      alert('An error occurred')
+      showToast('error', 'An error occurred')
     } finally {
       setSaving(false)
     }
@@ -120,10 +129,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         const prodData = await prodRes.json()
         if (prodData.success) setProduct(prodData.data)
       } else {
-        alert(data.error || 'Failed to upload image')
+        showToast('error', data.error || 'Failed to upload image')
       }
     } catch (err) {
-      alert('Upload failed')
+      showToast('error', 'Upload failed')
     } finally {
       setUploading(false)
       e.target.value = ''
@@ -162,10 +171,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           }
         }
       } else {
-        alert(data.error || 'Failed to upload images')
+        showToast('error', data.error || 'Failed to upload images')
       }
     } catch (err) {
-      alert('Upload failed')
+      showToast('error', 'Upload failed')
     } finally {
       setUploading(false)
       // reset file input
@@ -174,7 +183,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   }
 
   const handleDeleteImage = async (imageId: number) => {
-    if (!confirm('Delete this image?')) return
+    setDeletingImage(true)
     try {
       await adminFetch(`/api/admin/products/${resolvedParams.id}/images/${imageId}`, {
         method: 'DELETE'
@@ -184,7 +193,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       const prodData = await prodRes.json()
       if (prodData.success) setProduct(prodData.data)
     } catch (err) {
-      alert('Delete failed')
+      showToast('error', 'Delete failed')
+    } finally {
+      setDeletingImage(false)
+      setImageToDelete(null)
     }
   }
 
@@ -195,12 +207,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageUrl })
       })
-      alert('Main image updated')
+      showToast('success', 'Main image updated')
       const prodRes = await adminFetch(`/api/admin/products/${resolvedParams.id}`)
       const prodData = await prodRes.json()
       if (prodData.success) setProduct(prodData.data)
     } catch (err) {
-      alert('Update failed')
+      showToast('error', 'Update failed')
     }
   }
 
@@ -209,6 +221,17 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="max-w-4xl">
+      <Toast toast={toast} onClose={hideToast} />
+      <ConfirmDialog
+        open={imageToDelete !== null}
+        title="Delete image"
+        message="Are you sure you want to delete this image? This can't be undone."
+        confirmLabel="Delete"
+        destructive
+        loading={deletingImage}
+        onConfirm={() => imageToDelete !== null && handleDeleteImage(imageToDelete)}
+        onCancel={() => setImageToDelete(null)}
+      />
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin/products" className="p-2 hover:bg-card border border-card-border rounded-xl transition-colors">
           <ArrowLeft size={20} />
@@ -235,6 +258,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                   <label className="block text-sm font-medium mb-1.5">Display Price (e.g. ₹42,999)</label>
                   <input type="text" name="price" required value={formData.price} onChange={handleChange} placeholder="₹42,999" className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
                   <p className="mt-1 text-xs text-text-secondary">The price range filter on the Products page uses the numbers in this field automatically.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Original Price (optional)</label>
+                  <input type="text" name="originalPrice" value={formData.originalPrice} onChange={handleChange} placeholder="₹49,999" className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+                  <p className="mt-1 text-xs text-text-secondary">Leave blank if there&apos;s no discount. When set, it shows struck through next to the price.</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Category</label>
@@ -266,6 +294,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               <div>
                 <label className="block text-sm font-medium mb-1.5">Specifications (comma separated)</label>
                 <input type="text" name="specs" placeholder="e.g. 24 Cores, 5.8GHz Boost, 125W" value={formData.specs} onChange={handleChange} className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Offer (optional)</label>
+                <input type="text" name="offer" placeholder="e.g. 10% OFF, Flat ₹2,000 Off, Festive Deal" value={formData.offer} onChange={handleChange} className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+                <p className="mt-1 text-xs text-text-secondary">Leave blank if there&apos;s no offer. When set, it shows as a highlighted tag on the product card.</p>
               </div>
             </div>
 
@@ -334,8 +367,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         >
                           <ImageIcon size={14} />
                         </button>
-                        <button 
-                          onClick={() => handleDeleteImage(img.id)}
+                        <button
+                          onClick={() => setImageToDelete(img.id)}
                           className="p-2 bg-white text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                         >
                           <Trash2 size={14} />

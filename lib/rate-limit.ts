@@ -23,6 +23,7 @@ const store = new Map<string, RateLimitEntry>()
 export const RATE_LIMITS = {
   login: { maxAttempts: 5, windowMs: 15 * 60 * 1000 },
   enquiry: { maxAttempts: 10, windowMs: 15 * 60 * 1000 },
+  comment: { maxAttempts: 5, windowMs: 15 * 60 * 1000 },
   upload: { maxAttempts: 20, windowMs: 15 * 60 * 1000 },
   adminApi: { maxAttempts: 100, windowMs: 15 * 60 * 1000 },
 } as const

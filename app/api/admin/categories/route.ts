@@ -1,7 +1,11 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createCategorySchema } from '@/lib/validation'
-import { successResponse, validationError, serverError } from '@/lib/errors'
+import { verifyAuth } from '@/lib/auth'
+import { applyRateLimit } from '@/lib/api-helpers'
+import { RATE_LIMITS } from '@/lib/rate-limit'
+import { successResponse, validationError, serverError, unauthorizedError } from '@/lib/errors'
+import { logCategoryCreated } from '@/lib/logger'
 import { ZodError } from 'zod'
 
 function generateSlug(name: string): string {
@@ -27,6 +31,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitResponse = applyRateLimit(request, 'admin-categories', RATE_LIMITS.adminApi)
+    if (rateLimitResponse) return rateLimitResponse
+
+    const admin = await verifyAuth()
+    if (!admin) return unauthorizedError()
+
     const body = await request.json()
     const data = createCategorySchema.parse(body)
 
@@ -42,9 +52,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    logCategoryCreated(admin.username, category.id, category.name)
+
     return successResponse(category, 201)
   } catch (error) {
     if (error instanceof ZodError) return validationError(error)
-    return serverError(error)
+    return serverError(error, 'POST /api/admin/categories')
   }
 }

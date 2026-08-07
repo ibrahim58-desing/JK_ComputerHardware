@@ -64,25 +64,45 @@ Create a `.env` file in the root of the project (`/var/www/jk-computer-hardware/
 # Database connection string (replace with your actual credentials)
 DATABASE_URL="postgresql://jk_user:your_secure_password@localhost:5432/jk_hardware?schema=public"
 
-# Generate a strong random string for JWT_SECRET
-# You can generate one via: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# Generate a strong random string for JWT_SECRET (min 32 chars — app refuses to boot in
+# production without one). You can generate one via:
+# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 JWT_SECRET="your_very_long_random_secure_string_here"
+JWT_ISSUER="jk-computers"
+JWT_AUDIENCE="jk-admin"
+ADMIN_ACCESS_TOKEN_EXPIRY="20m"
+ADMIN_REFRESH_TOKEN_EXPIRY="7d"
 
-ADMIN_TOKEN_EXPIRY="24h"
 UPLOAD_MAX_SIZE_MB="5"
+NEXT_PUBLIC_SITE_URL="https://yourdomain.com"
 ```
 
-## 5. Database Migration & Seeding
+## 5. Database Setup & Seeding
 
-Apply the Prisma migrations to create the tables in your production database and seed it with the default admin user:
+This project has no Prisma migration history (`prisma/migrations` doesn't exist — schema
+changes have always been applied with `db push`), so **`prisma migrate deploy` will not
+create any tables** — it only replays migration files, and there are none. Use `db push`
+instead to sync the schema directly:
 
 ```bash
 npx prisma generate
-npx prisma migrate deploy
+npx prisma db push
 npx prisma db seed
 ```
 
-*Note: The default admin credentials from the seed file are: `admin` / `password123`. Change this immediately after logging in.*
+*Note: The default admin credentials from the seed file are `admin` / `admin123`. Change
+this immediately after logging in (Admin → Settings → Change Password).*
+
+**Uploaded product images are not in git** (`/public/uploads/` is gitignored on purpose,
+so binary uploads don't bloat the repo). If you're migrating an existing site rather than
+starting fresh, copy that folder to the server separately before going live, e.g.:
+
+```bash
+rsync -avz public/uploads/ user@yourserver:/var/www/jk-computer-hardware/public/uploads/
+```
+
+Skipping this step means every product's photo will 404 even though the database rows
+reference them correctly.
 
 ## 6. Build the Application
 

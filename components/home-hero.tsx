@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Sparkles, ArrowRight } from 'lucide-react'
+import { HeroCanvas } from '@/components/hero-canvas'
 import { whatsappHref } from '@/lib/settings'
 
 
@@ -21,6 +22,7 @@ export function HomeHero({ whatsappNumber }: { whatsappNumber: string }) {
           backgroundSize: '54px 54px',
         }}
       />
+      <HeroCanvas />
 
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center justify-center px-5 py-20 text-center lg:px-8">
         <div className="flex flex-col items-center">

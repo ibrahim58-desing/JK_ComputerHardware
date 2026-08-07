@@ -83,6 +83,62 @@ export function logSettingsUpdated(username: string, keys: string[]): void {
   })
 }
 
+export function logCategoryCreated(username: string, categoryId: number, name: string): void {
+  logSecurityEvent('category_created', {
+    username,
+    details: { categoryId, name },
+  })
+}
+
+export function logCategoryUpdated(username: string, categoryId: number): void {
+  logSecurityEvent('category_updated', {
+    username,
+    details: { categoryId },
+  })
+}
+
+export function logCategoryDeleted(username: string, categoryId: number): void {
+  logSecurityEvent('category_deleted', {
+    username,
+    details: { categoryId },
+  })
+}
+
+export function logCommentModerated(username: string, commentId: number, status: string): void {
+  logSecurityEvent('comment_moderated', {
+    username,
+    details: { commentId, status },
+  })
+}
+
+export function logCommentDeleted(username: string, commentId: number): void {
+  logSecurityEvent('comment_deleted', {
+    username,
+    details: { commentId },
+  })
+}
+
+export function logEnquiryDeleted(username: string, enquiryId: number): void {
+  logSecurityEvent('enquiry_deleted', {
+    username,
+    details: { enquiryId },
+  })
+}
+
+export function logProductImageUploaded(username: string, productId: number, count: number): void {
+  logSecurityEvent('product_image_uploaded', {
+    username,
+    details: { productId, count },
+  })
+}
+
+export function logProductImageDeleted(username: string, productId: number, imageId: number): void {
+  logSecurityEvent('product_image_deleted', {
+    username,
+    details: { productId, imageId },
+  })
+}
+
 export function logServerError(error: unknown, context?: string): void {
   logSecurityEvent('server_error', {
     level: 'error',

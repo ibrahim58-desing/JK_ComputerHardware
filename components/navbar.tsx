@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -14,6 +15,12 @@ const links = [
   { href: '/services', label: 'Services' },
   { href: '/contact', label: 'Contact' },
 ]
+
+// Top-level pages that open on a dark hero — the navbar should start
+// transparent/white on these and only flip to solid/dark once scrolled.
+// Nested routes (e.g. /products/123) aren't included since they don't have
+// a dark hero at the top.
+const DARK_HERO_ROUTES = ['/', '/products', '/about', '/services', '/contact', '/privacy']
 
 export function Navbar() {
   const pathname = usePathname()
@@ -69,7 +76,7 @@ export function Navbar() {
       ).slice(0, 5)
     : []
 
-  const isHome = pathname === '/' && !scrolled
+  const onDarkHero = DARK_HERO_ROUTES.includes(pathname) && !scrolled
 
   return (
     <header
@@ -79,13 +86,15 @@ export function Navbar() {
         }`}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:px-8">
-        <Link
-          href="/"
-          className={`font-heading text-2xl font-extrabold tracking-tight ${isHome ? 'text-white' : 'text-primary'
-            }`}
-          style={{ textShadow: isHome ? '0 2px 14px rgba(255,255,255,0.3)' : '0 2px 14px rgba(0,0,0,0.1)' }}
-        >
-          JK
+        <Link href="/" className="flex items-center" aria-label="JK Infosystem home">
+          <Image
+            src={onDarkHero ? '/brand/jk-logo-white.png' : '/brand/jk-logo-dark.png'}
+            alt="JK Infosystem"
+            width={140}
+            height={122}
+            priority
+            className="h-9 w-auto"
+          />
         </Link>
 
         <ul className="hidden items-center gap-8 md:flex">
@@ -96,15 +105,15 @@ export function Navbar() {
                 <Link
                   href={l.href}
                   className={`group relative text-sm font-medium transition-colors ${active
-                      ? (isHome ? 'text-white' : 'text-primary')
-                      : (isHome ? 'text-white/80 hover:text-white' : 'text-foreground hover:text-primary')
+                      ? (onDarkHero ? 'text-white' : 'text-primary')
+                      : (onDarkHero ? 'text-white/80 hover:text-white' : 'text-foreground hover:text-primary')
                     }`}
                 >
                   {l.label}
                   <span
                     className={`absolute -bottom-1.5 left-0 h-0.5 rounded-full transition-all duration-300 ${active ? 'w-full' : 'w-0 group-hover:w-full'
-                      } ${isHome ? 'bg-white' : 'bg-primary'}`}
-                    style={{ boxShadow: isHome ? '0 0 8px rgba(255,255,255,0.4)' : '0 0 8px rgba(0,0,0,0.2)' }}
+                      } ${onDarkHero ? 'bg-white' : 'bg-primary'}`}
+                    style={{ boxShadow: onDarkHero ? '0 0 8px rgba(255,255,255,0.4)' : '0 0 8px rgba(0,0,0,0.2)' }}
                   />
                 </Link>
               </li>
@@ -117,12 +126,12 @@ export function Navbar() {
           <div ref={searchRef} className="relative">
             <div
               className={`flex items-center rounded-full border px-3 py-1.5 transition-all duration-300 ${
-                isHome
+                onDarkHero
                   ? 'border-white/30 bg-white/10 text-white placeholder:text-white/50'
-                  : 'border-primary/20 bg-surface text-foreground'
+                  : 'border-card-border bg-white text-foreground shadow-sm'
               } ${searchOpen ? 'w-52' : 'w-40'}`}
             >
-              <Search size={14} className={`shrink-0 ${isHome ? 'text-white/60' : 'text-text-secondary'}`} />
+              <Search size={14} className={`shrink-0 ${onDarkHero ? 'text-white/60' : 'text-text-secondary'}`} />
               <input
                 type="text"
                 placeholder="Search..."
@@ -175,7 +184,7 @@ export function Navbar() {
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
-          className={`rounded-lg p-2 md:hidden ${isHome ? 'text-white' : 'text-foreground'
+          className={`rounded-lg p-2 md:hidden ${onDarkHero ? 'text-white' : 'text-foreground'
             }`}
         >
           {open ? <X size={22} /> : <Menu size={22} />}

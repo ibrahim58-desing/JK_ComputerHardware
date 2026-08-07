@@ -43,10 +43,12 @@ model Product {
   shortDescription String         @default("") @map("short_description")
   price            String         @default("₹0")
   numericPrice     Float          @default(0) @map("numeric_price")
+  originalPrice    String?        @map("original_price")
   stock            Int            @default(0)
   brand            String         @default("")
   specs            Json           @default("[]")
   badge            Json?
+  offer            String?
   image            String         @default("/placeholder.jpg")
   featured         Boolean        @default(false)
   status           String         @default("active") // active | inactive
@@ -112,6 +114,20 @@ model Testimonial {
 
   @@index([status])
   @@map("testimonials")
+}
+
+// ─── Homepage Comments (public wall, visitor-submitted) ──────────────────────────
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  name      String
+  message   String
+  status    String   @default("active") // active | hidden
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("comments")
 }
 
 // ─── Site Settings ──────────────────────────────────────────────────────────────

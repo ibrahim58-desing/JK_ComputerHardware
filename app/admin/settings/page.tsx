@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { adminFetch } from '@/lib/admin-fetch'
-import { Save, Loader2, Home, Star, Search, X, ArrowUp, ArrowDown, ImageIcon, Phone } from 'lucide-react'
+import { Save, Loader2, Home, Star, Search, X, ArrowUp, ArrowDown, ImageIcon, Phone, Lock, CheckCircle2 } from 'lucide-react'
 
 const MAX_TOP_PRODUCTS = 10
 
@@ -41,6 +41,14 @@ export default function SettingsPage() {
   const [homepageCategories, setHomepageCategories] = useState<string[]>([])
   const [topProducts, setTopProducts] = useState<string[]>([])
   const [contactInfo, setContactInfo] = useState({ ...CONTACT_DEFAULTS })
+
+  // Change password state
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -152,6 +160,42 @@ export default function SettingsPage() {
       alert('An error occurred while saving')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleChangePassword = async () => {
+    setPasswordError('')
+    setPasswordSuccess(false)
+
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New password and confirmation do not match.')
+      return
+    }
+
+    setPasswordSaving(true)
+    try {
+      const res = await adminFetch('/api/admin/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setPasswordSuccess(true)
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+      } else {
+        setPasswordError(data.error || 'Failed to change password')
+      }
+    } catch (e) {
+      setPasswordError('An error occurred while changing the password')
+    } finally {
+      setPasswordSaving(false)
     }
   }
 
@@ -365,12 +409,74 @@ export default function SettingsPage() {
         <div className="flex justify-end">
           <button
             onClick={handleSave}
-            disabled={saving} 
+            disabled={saving}
             className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-70"
           >
             {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
             Save Settings
           </button>
+        </div>
+
+        <div className="bg-card rounded-2xl border border-card-border p-6 shadow-blue space-y-6">
+          <div className="flex items-center gap-3 border-b border-card-border pb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Lock size={20} />
+            </div>
+            <div>
+              <h2 className="font-heading text-xl font-bold">Change Password</h2>
+              <p className="text-sm text-text-secondary">Update your admin login password.</p>
+            </div>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium mb-1.5">Current Password</label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 8 characters"
+                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Confirm New Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary"
+              />
+            </div>
+          </div>
+
+          {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
+          {passwordSuccess && (
+            <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
+              <CheckCircle2 size={16} />
+              Password updated successfully.
+            </p>
+          )}
+
+          <div className="flex justify-end">
+            <button
+              onClick={handleChangePassword}
+              disabled={passwordSaving || !currentPassword || !newPassword || !confirmPassword}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {passwordSaving ? <Loader2 size={18} className="animate-spin" /> : <Lock size={18} />}
+              Update Password
+            </button>
+          </div>
         </div>
       </div>
     </div>

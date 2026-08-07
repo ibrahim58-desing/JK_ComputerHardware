@@ -2,12 +2,17 @@ import { writeFile, mkdir, unlink } from 'fs/promises'
 import { existsSync } from 'fs'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
+import sharp from 'sharp'
 
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'products')
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp']
 const MAX_SIZE =
   parseInt(process.env.UPLOAD_MAX_SIZE_MB || '5', 10) * 1024 * 1024
+// Product photos only ever render as card thumbnails or a detail-page
+// preview — there's no reason to ship camera-resolution originals.
+const MAX_DIMENSION = 1600
+const WEBP_QUALITY = 82
 
 const MAGIC_BYTES: Record<string, number[][]> = {
   '.jpg': [[0xff, 0xd8, 0xff]],
@@ -62,7 +67,15 @@ export async function saveUploadedImage(file: File): Promise<string> {
 
   await ensureUploadDir()
 
-  const uniqueName = `${Date.now()}-${uuidv4()}${originalExt}`
+  // Re-encode every upload to a resized, compressed WebP — this also
+  // strips EXIF/GPS metadata as a side effect (sharp doesn't copy it
+  // forward unless explicitly asked to).
+  const optimized = await sharp(buffer)
+    .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: WEBP_QUALITY })
+    .toBuffer()
+
+  const uniqueName = `${Date.now()}-${uuidv4()}.webp`
   const filePath = path.join(UPLOAD_DIR, uniqueName)
 
   // Prevent directory traversal
@@ -72,7 +85,7 @@ export async function saveUploadedImage(file: File): Promise<string> {
     throw new Error('Invalid upload path')
   }
 
-  await writeFile(resolvedPath, buffer)
+  await writeFile(resolvedPath, optimized)
   return `/uploads/products/${uniqueName}`
 }
 

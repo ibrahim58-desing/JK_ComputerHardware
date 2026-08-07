@@ -5,9 +5,11 @@ import { adminFetch } from '@/lib/admin-fetch'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Save, Loader2, Upload, Image as ImageIcon, X } from 'lucide-react'
+import { Toast, useToast } from '@/components/ui/toast'
 
 export default function AddProductPage() {
   const router = useRouter()
+  const { toast, showToast, hideToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [imageUploading, setImageUploading] = useState(false)
   const [galleryUploading, setGalleryUploading] = useState(false)
@@ -17,6 +19,7 @@ export default function AddProductPage() {
     name: '',
     brand: '',
     price: '',
+    originalPrice: '',
     categoryId: '',
     stock: 0,
     status: 'active',
@@ -24,6 +27,7 @@ export default function AddProductPage() {
     shortDescription: '',
     description: '',
     specs: '', // comma separated for simplicity in UI
+    offer: '',
     image: '/placeholder.jpg',
     galleryImages: [] as string[],
   })
@@ -57,11 +61,11 @@ export default function AddProductPage() {
       if (data.success) {
         router.push('/admin/products')
       } else {
-        alert(data.error || 'Failed to create product')
+        showToast('error', data.error || 'Failed to create product')
       }
     } catch (error) {
       console.error(error)
-      alert('An error occurred')
+      showToast('error', 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -94,10 +98,10 @@ export default function AddProductPage() {
       if (data.success) {
         setFormData(prev => ({ ...prev, image: data.data.imageUrl }))
       } else {
-        alert(data.error || 'Failed to upload image')
+        showToast('error', data.error || 'Failed to upload image')
       }
     } catch (err) {
-      alert('Upload failed')
+      showToast('error', 'Upload failed')
     } finally {
       setImageUploading(false)
       // Reset input
@@ -151,6 +155,7 @@ export default function AddProductPage() {
 
   return (
     <div className="max-w-4xl">
+      <Toast toast={toast} onClose={hideToast} />
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin/products" className="p-2 hover:bg-card border border-card-border rounded-xl transition-colors">
           <ArrowLeft size={20} />
@@ -175,6 +180,11 @@ export default function AddProductPage() {
               <label className="block text-sm font-medium mb-1.5">Display Price (e.g. ₹42,999)</label>
               <input type="text" name="price" required value={formData.price} onChange={handleChange} placeholder="₹42,999" className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
               <p className="mt-1 text-xs text-text-secondary">The price range filter on the Products page uses the numbers in this field automatically.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Original Price (optional)</label>
+              <input type="text" name="originalPrice" value={formData.originalPrice} onChange={handleChange} placeholder="₹49,999" className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+              <p className="mt-1 text-xs text-text-secondary">Leave blank if there&apos;s no discount. When set, it shows struck through next to the price.</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">Category</label>
@@ -206,6 +216,11 @@ export default function AddProductPage() {
           <div>
             <label className="block text-sm font-medium mb-1.5">Specifications (comma separated)</label>
             <input type="text" name="specs" placeholder="e.g. 24 Cores, 5.8GHz Boost, 125W" value={formData.specs} onChange={handleChange} className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Offer (optional)</label>
+            <input type="text" name="offer" placeholder="e.g. 10% OFF, Flat ₹2,000 Off, Festive Deal" value={formData.offer} onChange={handleChange} className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+            <p className="mt-1 text-xs text-text-secondary">Leave blank if there&apos;s no offer. When set, it shows as a highlighted tag on the product card.</p>
           </div>
         </div>
 

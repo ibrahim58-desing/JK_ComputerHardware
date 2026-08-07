@@ -22,7 +22,49 @@ const PROTECTED_PAGE_ROUTES = ['/admin']
 const PROTECTED_API_ROUTES = ['/api/admin']
 const PUBLIC_ADMIN_ROUTES = ['/admin/login']
 
-function addSecurityHeaders(response: NextResponse): NextResponse {
+function generateNonce(): string {
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return btoa(binary)
+}
+
+function buildCsp(nonce: string): string {
+  const isDev = process.env.NODE_ENV !== 'production'
+  // 'unsafe-eval' is only needed for Turbopack/webpack HMR in dev — never
+  // shipped in production. Script execution otherwise requires the
+  // per-request nonce (Next.js applies it automatically to its own
+  // framework-injected scripts once it's present in this header).
+  const scriptSrc = isDev
+    ? `'self' 'nonce-${nonce}' 'unsafe-eval'`
+    : `'self' 'nonce-${nonce}' 'strict-dynamic'`
+
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrc}`,
+    // Inline style ATTRIBUTES (React's style={{...}} / framer-motion) have
+    // no nonce mechanism in the CSP spec — only <style> elements do — so
+    // this can't be tightened without migrating those to CSS classes.
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "frame-src 'self' https://www.openstreetmap.org",
+    "object-src 'none'",
+    "worker-src 'self'",
+    "manifest-src 'self'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ')
+}
+
+function addSecurityHeaders(
+  response: NextResponse,
+  nonce: string,
+  pathname: string
+): NextResponse {
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
@@ -30,11 +72,17 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), payment=()'
   )
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set(
-      'Strict-Transport-Security',
-      'max-age=63072000; includeSubDomains; preload'
-    )
+  response.headers.set('Content-Security-Policy', buildCsp(nonce))
+  // HSTS is a no-op over plain HTTP (browsers ignore it outside TLS), so
+  // it's safe to always send rather than gate on NODE_ENV.
+  response.headers.set(
+    'Strict-Transport-Security',
+    'max-age=63072000; includeSubDomains; preload'
+  )
+  // Admin API responses can carry account/enquiry/comment data — never let
+  // an intermediary or the browser cache them.
+  if (pathname.startsWith('/api/admin')) {
+    response.headers.set('Cache-Control', 'no-store')
   }
   return response
 }
@@ -71,6 +119,9 @@ async function refreshAccessToken(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const method = request.method
+  const nonce = generateNonce()
+  const withHeaders = (response: NextResponse) =>
+    addSecurityHeaders(response, nonce, pathname)
 
   const isProtectedPage = PROTECTED_PAGE_ROUTES.some((route) =>
     pathname.startsWith(route)
@@ -83,6 +134,7 @@ export async function middleware(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', pathname)
+  requestHeaders.set('x-nonce', nonce)
 
   // CSRF validation for mutating admin API requests
   if (requiresCsrfValidation(pathname, method)) {
@@ -91,7 +143,7 @@ export async function middleware(request: NextRequest) {
         { success: false, error: 'Invalid CSRF token' },
         { status: 403 }
       )
-      return addSecurityHeaders(response)
+      return withHeaders(response)
     }
   }
 
@@ -104,11 +156,11 @@ export async function middleware(request: NextRequest) {
     if (isPublicAdmin && !request.cookies.get(CSRF_COOKIE_NAME)?.value) {
       setCsrfCookie(response, generateCsrfToken())
     }
-    return addSecurityHeaders(response)
+    return withHeaders(response)
   }
 
   if (!isProtectedPage && !isProtectedApi) {
-    return addSecurityHeaders(
+    return withHeaders(
       NextResponse.next({ request: { headers: requestHeaders } })
     )
   }
@@ -125,14 +177,14 @@ export async function middleware(request: NextRequest) {
 
   if (!token) {
     if (isProtectedApi) {
-      return addSecurityHeaders(
+      return withHeaders(
         NextResponse.json(
           { success: false, error: 'Unauthorized' },
           { status: 401 }
         )
       )
     }
-    return addSecurityHeaders(
+    return withHeaders(
       NextResponse.redirect(new URL('/admin/login', request.url))
     )
   }
@@ -158,7 +210,7 @@ export async function middleware(request: NextRequest) {
       })
     }
 
-    return addSecurityHeaders(response)
+    return withHeaders(response)
   } catch {
     // Try refresh on expired access token
     if (refreshToken) {
@@ -174,7 +226,7 @@ export async function middleware(request: NextRequest) {
           path: '/',
           maxAge: 20 * 60,
         })
-        return addSecurityHeaders(response)
+        return withHeaders(response)
       }
     }
 
@@ -185,7 +237,7 @@ export async function middleware(request: NextRequest) {
       )
       response.cookies.set(ACCESS_COOKIE_NAME, '', { maxAge: 0, path: '/' })
       response.cookies.set(REFRESH_COOKIE_NAME, '', { maxAge: 0, path: '/' })
-      return addSecurityHeaders(response)
+      return withHeaders(response)
     }
 
     const response = NextResponse.redirect(
@@ -193,7 +245,7 @@ export async function middleware(request: NextRequest) {
     )
     response.cookies.set(ACCESS_COOKIE_NAME, '', { maxAge: 0, path: '/' })
     response.cookies.set(REFRESH_COOKIE_NAME, '', { maxAge: 0, path: '/' })
-    return addSecurityHeaders(response)
+    return withHeaders(response)
   }
 }
 

@@ -5,23 +5,23 @@ import { TopProductsShowcase } from '@/components/top-products-showcase'
 import { HomepageCategorySections } from '@/components/homepage-category-sections'
 import { StatsBand } from '@/components/stats-band'
 import { HomeServices } from '@/components/home-services'
-import { Testimonials } from '@/components/testimonials'
+import { CommentsSection } from '@/components/comments-section'
 import { CtaBanner } from '@/components/cta-banner'
 import { prisma } from '@/lib/prisma'
 import { getSiteSettings } from '@/lib/settings'
 
 export default async function HomePage() {
-  const settings = await getSiteSettings()
-
-  const testimonials = await prisma.testimonial.findMany({
-    where: { status: 'active' },
-    orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }],
-  })
-
-  // Fetch Top Products Setting
-  const topProductsSetting = await prisma.siteSetting.findUnique({
-    where: { key: 'top_products' }
-  })
+  // Independent lookups — run them together instead of one-by-one.
+  const [settings, comments, topProductsSetting, homepageCategoriesSetting] = await Promise.all([
+    getSiteSettings(),
+    prisma.comment.findMany({
+      where: { status: 'active' },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    }),
+    prisma.siteSetting.findUnique({ where: { key: 'top_products' } }),
+    prisma.siteSetting.findUnique({ where: { key: 'homepage_categories' } }),
+  ])
 
   let topProducts: any[] = []
 
@@ -40,40 +40,47 @@ export default async function HomePage() {
     }
   }
 
-  // Fetch Homepage Categories Setting
-  const setting = await prisma.siteSetting.findUnique({
-    where: { key: 'homepage_categories' }
-  })
-
   let categorySections: any[] = []
-  
-  if (setting && setting.value) {
+
+  if (homepageCategoriesSetting && homepageCategoriesSetting.value) {
     try {
-      const categoryIds = JSON.parse(setting.value) as string[]
-      
-      // Fetch each category's top 4 products with images
-      for (const catId of categoryIds) {
-        const id = parseInt(catId, 10)
-        const category = await prisma.category.findUnique({ where: { id } })
-        if (category) {
-          const products = await prisma.product.findMany({
+      const categoryIds = (JSON.parse(homepageCategoriesSetting.value) as string[]).map((id) => parseInt(id, 10))
+
+      // Fetch categories in one query, then each category's products in
+      // parallel instead of round-tripping the DB twice per category
+      // sequentially.
+      const categories = await prisma.category.findMany({ where: { id: { in: categoryIds } } })
+      const categoryById = new Map(categories.map((c) => [c.id, c]))
+
+      const productLists = await Promise.all(
+        categoryIds.map((id) =>
+          prisma.product.findMany({
             where: {
               categoryId: id,
               status: 'active',
-              image: { not: '/placeholder.jpg' }
+              image: { not: '/placeholder.jpg' },
             },
             take: 12,
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
           })
-          
-          if (products.length > 0) {
-            categorySections.push({
-              category: { id: category.id, name: category.name },
-              products
-            })
+        )
+      )
+
+      categorySections = categoryIds
+        .map((id, i) => {
+          const category = categoryById.get(id)
+          const products = productLists[i]
+          if (!category || products.length === 0) return null
+          return {
+            category: { id: category.id, name: category.name },
+            products: products.map((p) => ({
+              ...p,
+              category: category.name,
+              badge: p.badge ? (typeof p.badge === 'string' ? JSON.parse(p.badge) : p.badge) : undefined,
+            })),
           }
-        }
-      }
+        })
+        .filter((s): s is NonNullable<typeof s> => s !== null)
     } catch (e) {
       console.error('Failed to parse homepage_categories setting', e)
     }
@@ -84,11 +91,11 @@ export default async function HomePage() {
       <HomeHero whatsappNumber={settings.whatsapp_number} />
       <HomeFeatures />
       <TopProductsShowcase products={topProducts as any} />
-      <HomepageCategorySections sections={categorySections} />
+      <HomepageCategorySections sections={categorySections} whatsappNumber={settings.whatsapp_number} />
       <BrandsMarquee />
       <StatsBand heading="Why customers across India choose JK Infosystem." />
       <HomeServices />
-      <Testimonials testimonials={testimonials} />
+      <CommentsSection initialComments={comments as any} />
       <CtaBanner />
     </>
   )

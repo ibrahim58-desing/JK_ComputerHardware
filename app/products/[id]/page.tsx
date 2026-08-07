@@ -1,9 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, MessageCircle, CheckCircle2, ShieldCheck, Truck } from 'lucide-react'
+import { ArrowLeft, MessageCircle, CheckCircle2, ShieldCheck, Truck, Tag } from 'lucide-react'
 import { categoryIcons, badgeClasses } from '@/lib/products'
-import { PageHero } from '@/components/page-hero'
 import { ProductCard } from '@/components/product-card'
 import { prisma } from '@/lib/prisma'
 import { getSiteSettings, whatsappHref } from '@/lib/settings'
@@ -70,7 +69,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   return (
     <>
 
-      <section className="bg-background px-5 py-12 lg:px-8">
+      <section className="bg-background px-5 pt-28 pb-12 sm:pt-32 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <Link
             href="/products"
@@ -116,13 +115,24 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               <h1 className="font-heading text-3xl font-extrabold text-foreground sm:text-4xl">
                 {product.name}
               </h1>
-              <div className="mt-4 flex items-center gap-4">
+              <div className="mt-4 flex flex-wrap items-center gap-4">
                 <span className="font-heading text-4xl font-bold text-primary">
                   {product.price}
                 </span>
+                {product.originalPrice && (
+                  <span className="text-lg font-medium text-text-secondary line-through">
+                    {product.originalPrice}
+                  </span>
+                )}
                 <span className="rounded-md bg-green-50 px-2.5 py-1 text-sm font-medium text-green-700">
                   {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                 </span>
+                {product.offer && (
+                  <span className="flex items-center gap-1.5 rounded-md bg-amber-500 px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-wide text-white">
+                    <Tag size={12} />
+                    {product.offer}
+                  </span>
+                )}
               </div>
 
               <p className="mt-6 text-base leading-relaxed text-text-secondary">

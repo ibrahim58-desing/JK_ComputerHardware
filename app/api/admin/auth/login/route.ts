@@ -7,7 +7,7 @@ import {
   setAuthCookies,
 } from '@/lib/auth'
 import { loginSchema } from '@/lib/validation'
-import { RATE_LIMITS } from '@/lib/rate-limit'
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit'
 import { getClientIp, applyRateLimit } from '@/lib/api-helpers'
 import {
   successResponse,
@@ -31,6 +31,17 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request)
     const body = await request.json()
     const { username, password } = loginSchema.parse(body)
+
+    // Per-account lockout, independent of source IP — stops distributed
+    // credential-stuffing against a single known username.
+    const accountLimit = checkRateLimit(`login-account:${username.toLowerCase()}`, RATE_LIMITS.login)
+    if (!accountLimit.allowed) {
+      logFailedLogin(ip, username)
+      return errorResponse(
+        `Too many failed attempts for this account. Try again in ${Math.ceil(accountLimit.resetIn / 60000)} minutes.`,
+        429
+      )
+    }
 
     const admin = await prisma.admin.findUnique({
       where: { username },

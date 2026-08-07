@@ -13,7 +13,12 @@ export const metadata: Metadata = {
     'Browse our full range of genuine computer hardware — CPUs, GPUs, RAM, storage, monitors, keyboards and mice at honest, competitive prices.',
 }
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; brand?: string }>
+}) {
+  const resolvedSearchParams = await searchParams
   const settings = await getSiteSettings()
   const [products, categories] = await Promise.all([
     prisma.product.findMany({
@@ -39,10 +44,15 @@ export default async function ProductsPage() {
       <PageHero
         title="Our Products"
         subtitle="Browse our full range of genuine computer hardware"
-        variant="white"
+        variant="blue"
       />
       <ProductBanner />
-      <ProductsExplorer initialProducts={formattedProducts as any} whatsappNumber={settings.whatsapp_number} />
+      <ProductsExplorer
+        initialProducts={formattedProducts as any}
+        whatsappNumber={settings.whatsapp_number}
+        initialCategory={resolvedSearchParams.category}
+        initialBrand={resolvedSearchParams.brand}
+      />
       <CtaBanner />
     </>
   )

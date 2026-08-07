@@ -115,8 +115,8 @@ export function TopProductsShowcase({ products }: { products: TopProduct[] }) {
       </div>
 
       <div ref={containerRef} className="relative mt-12">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-surface to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-surface to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-24 bg-gradient-to-r from-surface to-transparent md:block" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-24 bg-gradient-to-l from-surface to-transparent md:block" />
 
         <div className="overflow-x-hidden py-10">
           <motion.div className="flex" style={{ x }}>

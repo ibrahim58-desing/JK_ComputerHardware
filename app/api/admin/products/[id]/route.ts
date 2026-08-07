@@ -68,10 +68,12 @@ export async function PUT(
       updateData.price = data.price
       updateData.numericPrice = parsePriceToNumber(data.price)
     }
+    if (data.originalPrice !== undefined) updateData.originalPrice = data.originalPrice || null
     if (data.stock !== undefined) updateData.stock = data.stock
     if (data.brand !== undefined) updateData.brand = data.brand
     if (data.specs !== undefined) updateData.specs = data.specs
     if (data.badge !== undefined) updateData.badge = data.badge || null
+    if (data.offer !== undefined) updateData.offer = data.offer || null
     if (data.image !== undefined) updateData.image = data.image
     if (data.featured !== undefined) updateData.featured = data.featured
     if (data.status !== undefined) updateData.status = data.status

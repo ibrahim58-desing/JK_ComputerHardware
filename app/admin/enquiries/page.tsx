@@ -46,7 +46,7 @@ export default function AdminEnquiriesPage() {
           </div>
         ) : (
           enquiries.map((enq) => (
-            <div key={enq.id} className="bg-card rounded-2xl border border-card-border shadow-blue overflow-hidden transition-all hover:border-primary/50">
+            <div key={enq.id} className="bg-card rounded-2xl border border-card-border shadow-blue overflow-hidden transition-all duration-200 hover:border-primary">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 p-6 border-b border-card-border bg-surface/30">
                 <div>
                   <h3 className="font-heading text-xl font-bold text-foreground">{enq.customerName}</h3>

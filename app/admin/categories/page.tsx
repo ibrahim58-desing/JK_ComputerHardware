@@ -135,7 +135,7 @@ export default function AdminCategoriesPage() {
             </thead>
             <tbody className="divide-y divide-card-border">
               {categories.map((cat) => (
-                <tr key={cat.id} className="hover:bg-surface/50 transition-colors">
+                <tr key={cat.id} className="outline-2 -outline-offset-2 outline-transparent transition-all duration-200 hover:bg-surface/50 hover:outline-black">
                   <td className="px-6 py-4 font-medium text-foreground">{cat.name}</td>
                   <td className="px-6 py-4 text-text-secondary">{cat.slug}</td>
                   <td className="px-6 py-4 text-center">

@@ -7,6 +7,7 @@ import { whatsappHref } from '@/lib/settings'
 
 export function FloatingButtons({ whatsappNumber }: { whatsappNumber: string }) {
   const [showTop, setShowTop] = useState(false)
+  const [nearFooter, setNearFooter] = useState(false)
 
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 300)
@@ -14,8 +15,20 @@ export function FloatingButtons({ whatsappNumber }: { whatsappNumber: string }) 
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  useEffect(() => {
+    const footer = document.querySelector('footer')
+    if (!footer) return
+    const observer = new IntersectionObserver(([entry]) => setNearFooter(entry.isIntersecting))
+    observer.observe(footer)
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
+    <div
+      className={`fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3 transition-opacity duration-300 ${
+        nearFooter ? 'pointer-events-none opacity-0' : 'opacity-100'
+      }`}
+    >
       <AnimatePresence>
         {showTop && (
           <motion.button

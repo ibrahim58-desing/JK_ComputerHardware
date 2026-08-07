@@ -6,11 +6,13 @@ import {
   LayoutDashboard,
   Package,
   FolderTree,
-  Quote,
+  Inbox,
+  MessageSquare,
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  User,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { adminFetch } from '@/lib/admin-fetch'
@@ -19,7 +21,8 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: FolderTree },
-  { name: 'Testimonials', href: '/admin/testimonials', icon: Quote },
+  { name: 'Enquiries', href: '/admin/enquiries', icon: Inbox },
+  { name: 'Comments', href: '/admin/comments', icon: MessageSquare },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
@@ -67,7 +70,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }`}
       >
         <div className="flex h-16 shrink-0 items-center px-6 border-b border-card-border">
-          <span className="font-heading text-2xl font-extrabold text-primary">JK Admin</span>
+          <Link href="/admin" className="font-heading text-2xl font-extrabold text-primary hover:opacity-80 transition-opacity">
+            JK Admin
+          </Link>
           <button
             className="ml-auto lg:hidden text-text-secondary"
             onClick={() => setSidebarOpen(false)}
@@ -103,10 +108,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="border-t border-card-border p-4">
-          <div className="mb-4 px-4">
-            <p className="text-sm font-medium text-foreground">{user?.username || 'Admin'}</p>
-            <p className="text-xs text-text-secondary capitalize">{user?.role || 'Administrator'}</p>
-          </div>
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-600 transition-all hover:bg-red-50"
@@ -131,6 +132,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link href="/" target="_blank" className="text-sm font-medium text-primary hover:underline">
                 View Site →
               </Link>
+              <div className="h-6 w-px bg-card-border" />
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <User size={16} />
+                </div>
+                <div className="hidden sm:block leading-tight">
+                  <p className="text-sm font-semibold text-foreground">{user?.username || 'Admin'}</p>
+                  <p className="text-xs text-text-secondary capitalize">{user?.role || 'Administrator'}</p>
+                </div>
+              </div>
             </div>
           </div>
         </header>

@@ -25,12 +25,15 @@ export type Product = {
   name: string
   brand: string
   price: string
+  originalPrice?: string | null
   numericPrice: number
   category: Category
   specs: string[]
   description: string
   image: string
+  stock?: number
   badge?: { label: string; tone: BadgeTone }
+  offer?: string | null
 }
 
 export const categoryIcons: Record<Category, LucideIcon> = {

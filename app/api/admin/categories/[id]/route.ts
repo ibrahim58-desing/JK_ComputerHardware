@@ -1,13 +1,18 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { updateCategorySchema } from '@/lib/validation'
+import { verifyAuth } from '@/lib/auth'
+import { applyRateLimit } from '@/lib/api-helpers'
+import { RATE_LIMITS } from '@/lib/rate-limit'
 import {
   successResponse,
   errorResponse,
   notFoundError,
   validationError,
   serverError,
+  unauthorizedError,
 } from '@/lib/errors'
+import { logCategoryUpdated, logCategoryDeleted } from '@/lib/logger'
 import { ZodError } from 'zod'
 
 function generateSlug(name: string): string {
@@ -22,6 +27,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const rateLimitResponse = applyRateLimit(request, 'admin-categories', RATE_LIMITS.adminApi)
+    if (rateLimitResponse) return rateLimitResponse
+
     const { id } = await params
     const categoryId = parseInt(id, 10)
     if (isNaN(categoryId)) return notFoundError('Invalid category ID')
@@ -30,6 +38,9 @@ export async function PUT(
       where: { id: categoryId },
     })
     if (!existing) return notFoundError('Category not found')
+
+    const admin = await verifyAuth()
+    if (!admin) return unauthorizedError()
 
     const body = await request.json()
     const data = updateCategorySchema.parse(body)
@@ -45,10 +56,12 @@ export async function PUT(
       },
     })
 
+    logCategoryUpdated(admin.username, categoryId)
+
     return successResponse(category)
   } catch (error) {
     if (error instanceof ZodError) return validationError(error)
-    return serverError(error)
+    return serverError(error, 'PUT /api/admin/categories/[id]')
   }
 }
 
@@ -57,9 +70,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const rateLimitResponse = applyRateLimit(request, 'admin-categories', RATE_LIMITS.adminApi)
+    if (rateLimitResponse) return rateLimitResponse
+
     const { id } = await params
     const categoryId = parseInt(id, 10)
     if (isNaN(categoryId)) return notFoundError('Invalid category ID')
+
+    const admin = await verifyAuth()
+    if (!admin) return unauthorizedError()
 
     // Check for products in this category
     const productCount = await prisma.product.count({
@@ -73,8 +92,11 @@ export async function DELETE(
     }
 
     await prisma.category.delete({ where: { id: categoryId } })
+
+    logCategoryDeleted(admin.username, categoryId)
+
     return successResponse({ message: 'Category deleted' })
   } catch (error) {
-    return serverError(error)
+    return serverError(error, 'DELETE /api/admin/categories/[id]')
   }
 }

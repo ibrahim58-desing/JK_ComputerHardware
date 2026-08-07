@@ -7,6 +7,11 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required').max(128),
 })
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters').max(128),
+})
+
 // ─── Products ─────────────────────────────────────────────────────────────────
 
 export const createProductSchema = z.object({
@@ -14,6 +19,7 @@ export const createProductSchema = z.object({
   description: z.string().default(''),
   shortDescription: z.string().max(500).default(''),
   price: z.string().min(1, 'Price is required'),
+  originalPrice: z.string().max(50).nullable().optional(),
   stock: z.number().int().min(0).default(0),
   brand: z.string().max(100).default(''),
   specs: z.array(z.string()).default([]),
@@ -24,6 +30,7 @@ export const createProductSchema = z.object({
     })
     .nullable()
     .optional(),
+  offer: z.string().max(100).nullable().optional(),
   image: z.string().default('/placeholder.jpg'),
   galleryImages: z.array(z.string()).optional(),
   featured: z.boolean().default(false),
@@ -31,7 +38,24 @@ export const createProductSchema = z.object({
   categoryId: z.number().int().positive('Category is required'),
 })
 
-export const updateProductSchema = createProductSchema.partial()
+// createProductSchema.partial() is NOT enough on its own: Zod still applies
+// a field's .default(...) when that key is simply absent from the request
+// body, even though the field is now "optional". Every partial update (e.g.
+// editing just the price) was silently resetting `image` back to
+// '/placeholder.jpg' — since the edit form never sends `image` — which then
+// hid the product from the storefront's placeholder-image filter. Re-declare
+// every defaulted field here as plain-optional so an absent key really means
+// "leave this field alone" instead of "reset it to the schema default".
+export const updateProductSchema = createProductSchema.partial().extend({
+  description: z.string().optional(),
+  shortDescription: z.string().max(500).optional(),
+  stock: z.number().int().min(0).optional(),
+  brand: z.string().max(100).optional(),
+  specs: z.array(z.string()).optional(),
+  image: z.string().optional(),
+  featured: z.boolean().optional(),
+  status: z.enum(['active', 'inactive']).optional(),
+})
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 
@@ -63,7 +87,21 @@ export const createTestimonialSchema = z.object({
   displayOrder: z.number().int().default(0),
 })
 
-export const updateTestimonialSchema = createTestimonialSchema.partial()
+// Same defaults-leak-through-partial() issue as updateProductSchema above —
+// re-declare the defaulted fields as plain-optional.
+export const updateTestimonialSchema = createTestimonialSchema.partial().extend({
+  role: z.string().max(100).optional(),
+  rating: z.number().int().min(1).max(5).optional(),
+  status: z.enum(['active', 'inactive']).optional(),
+  displayOrder: z.number().int().optional(),
+})
+
+// ─── Homepage Comments ────────────────────────────────────────────────────────
+
+export const createCommentSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  message: z.string().min(1, 'Comment is required').max(1000),
+})
 
 // ─── Site Settings ────────────────────────────────────────────────────────────
 

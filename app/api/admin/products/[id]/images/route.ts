@@ -2,13 +2,18 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { saveUploadedImage } from '@/lib/upload'
 import { reorderImagesSchema } from '@/lib/validation'
+import { verifyAuth } from '@/lib/auth'
+import { applyRateLimit } from '@/lib/api-helpers'
+import { RATE_LIMITS } from '@/lib/rate-limit'
 import {
   successResponse,
   errorResponse,
   notFoundError,
   validationError,
   serverError,
+  unauthorizedError,
 } from '@/lib/errors'
+import { logProductImageUploaded } from '@/lib/logger'
 import { ZodError } from 'zod'
 
 export async function POST(
@@ -16,9 +21,15 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const rateLimitResponse = applyRateLimit(request, 'upload', RATE_LIMITS.upload)
+    if (rateLimitResponse) return rateLimitResponse
+
     const { id } = await params
     const productId = parseInt(id, 10)
     if (isNaN(productId)) return notFoundError('Invalid product ID')
+
+    const admin = await verifyAuth()
+    if (!admin) return unauthorizedError()
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -62,9 +73,11 @@ export async function POST(
       return errorResponse('Failed to upload any images', 400)
     }
 
+    logProductImageUploaded(admin.username, productId, savedImages.length)
+
     return successResponse(savedImages, 201)
   } catch (error) {
-    return serverError(error)
+    return serverError(error, 'POST /api/admin/products/[id]/images')
   }
 }
 
@@ -74,9 +87,15 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const rateLimitResponse = applyRateLimit(request, 'admin-products', RATE_LIMITS.adminApi)
+    if (rateLimitResponse) return rateLimitResponse
+
     const { id } = await params
     const productId = parseInt(id, 10)
     if (isNaN(productId)) return notFoundError('Invalid product ID')
+
+    const admin = await verifyAuth()
+    if (!admin) return unauthorizedError()
 
     const body = await request.json()
     const { imageIds } = reorderImagesSchema.parse(body)
