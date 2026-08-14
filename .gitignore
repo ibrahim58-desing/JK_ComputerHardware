@@ -21,6 +21,7 @@ node_modules
 
 # Database
 prisma/*.db
+*.sql
 
 # Uploads
 /public/uploads/
