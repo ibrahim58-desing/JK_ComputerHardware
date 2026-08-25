@@ -14,7 +14,8 @@ export const metadata: Metadata = {
     'Get in touch with JK Infosystem — your trusted Pan-India technology partner. Visit, call, or send us a message.',
 }
 
-export const revalidate = 300
+// Must stay dynamic — see app/page.tsx for why (CSP nonce vs. static cache).
+export const dynamic = 'force-dynamic'
 
 export default async function ContactPage() {
   const settings = await getSiteSettings()

@@ -10,7 +10,11 @@ import { CtaBanner } from '@/components/cta-banner'
 import { prisma } from '@/lib/prisma'
 import { getSiteSettings } from '@/lib/settings'
 
-export const revalidate = 60
+// Must stay dynamic: middleware issues a fresh CSP nonce per request, and a
+// statically-cached page would serve stale-nonce'd scripts that the browser
+// blocks (breaks hydration — see the white-screen incident this comment
+// replaced). Next.js requires dynamic rendering for nonce-based CSP.
+export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   // Independent lookups — run them together instead of one-by-one.

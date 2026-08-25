@@ -12,8 +12,6 @@ import { getSiteSettings, whatsappHref } from '@/lib/settings'
 // crashing Next's build worker pool) and doesn't make sense anyway for a
 // catalog that changes via the admin panel — this renders per-request instead.
 
-export const revalidate = 300
-
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
   const settings = await getSiteSettings()
