@@ -58,7 +58,6 @@ export default async function HomePage() {
             where: {
               categoryId: id,
               status: 'active',
-              image: { not: '/placeholder.jpg' },
             },
             take: 12,
             orderBy: { createdAt: 'desc' },

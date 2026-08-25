@@ -186,12 +186,12 @@ export default function AddProductPage() {
               <input type="text" name="brand" value={formData.brand} onChange={handleChange} className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5">Display Price</label>
+              <label className="block text-sm font-medium mb-1.5">Display Price (optional)</label>
               <div className="relative">
                 <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm text-text-secondary">₹</span>
-                <input type="text" name="price" required value={formData.price} onChange={handleChange} placeholder="42,999" className="w-full rounded-xl border border-input bg-background pl-8 pr-4 py-2.5 text-sm outline-none focus:border-primary" />
+                <input type="text" name="price" value={formData.price} onChange={handleChange} placeholder="42,999" className="w-full rounded-xl border border-input bg-background pl-8 pr-4 py-2.5 text-sm outline-none focus:border-primary" />
               </div>
-              <p className="mt-1 text-xs text-text-secondary">The price range filter on the Products page uses the numbers in this field automatically.</p>
+              <p className="mt-1 text-xs text-text-secondary">Leave blank if the price isn&apos;t set yet. The price range filter on the Products page uses the numbers in this field automatically.</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">Original Price (optional)</label>

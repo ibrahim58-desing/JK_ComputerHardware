@@ -6,7 +6,7 @@ import {
   FacebookIcon,
   YoutubeIcon,
 } from '@/components/social-icons'
-import { type SiteSettings } from '@/lib/settings'
+import { type SiteSettings, whatsappHref, telHref, mailHref } from '@/lib/settings'
 
 const cols = [
   {
@@ -123,19 +123,53 @@ export function Footer({ settings }: { settings: SiteSettings }) {
             <ul className="mt-4 space-y-3 text-sm text-white/60">
               <li className="flex gap-2.5">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-blue-300" />
-                <span>{settings.contact_address || 'Address coming soon'}</span>
+                {settings.google_maps_url ? (
+                  <a
+                    href={settings.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-colors hover:text-blue-300"
+                  >
+                    {settings.contact_address || 'Address coming soon'}
+                  </a>
+                ) : (
+                  <span>{settings.contact_address || 'Address coming soon'}</span>
+                )}
               </li>
               <li className="flex gap-2.5">
                 <Phone size={16} className="mt-0.5 shrink-0 text-blue-300" />
-                <span>{settings.contact_phone || 'Phone coming soon'}</span>
+                {settings.contact_phone ? (
+                  <a href={telHref(settings.contact_phone)} className="transition-colors hover:text-blue-300">
+                    {settings.contact_phone}
+                  </a>
+                ) : (
+                  <span>Phone coming soon</span>
+                )}
               </li>
               <li className="flex gap-2.5">
                 <MessageCircle size={16} className="mt-0.5 shrink-0" style={{ color: '#25D366' }} />
-                <span>{settings.whatsapp_number || 'WhatsApp coming soon'} (WhatsApp)</span>
+                {settings.whatsapp_number ? (
+                  <a
+                    href={whatsappHref(settings.whatsapp_number)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-colors hover:text-blue-300"
+                  >
+                    {settings.whatsapp_number} (WhatsApp)
+                  </a>
+                ) : (
+                  <span>WhatsApp coming soon</span>
+                )}
               </li>
               <li className="flex gap-2.5">
                 <Mail size={16} className="mt-0.5 shrink-0 text-blue-300" />
-                <span>{settings.contact_email || 'Email coming soon'}</span>
+                {settings.contact_email ? (
+                  <a href={mailHref(settings.contact_email)} className="transition-colors hover:text-blue-300">
+                    {settings.contact_email}
+                  </a>
+                ) : (
+                  <span>Email coming soon</span>
+                )}
               </li>
             </ul>
 

@@ -4,12 +4,15 @@
 //   npx tsx prisma/import-products.ts path/to/products.xlsx
 //
 // Expected columns (header row, case-insensitive, order doesn't matter):
-//   name*, category*, price*, brand, description, shortDescription,
+//   name*, category*, price, brand, description, shortDescription,
 //   originalPrice, stock, specs, image, featured, status
+//   (* = required; price defaults to ₹0 if left blank)
 //
 // - category: matched by name against the categories table; created if it
 //   doesn't exist yet.
-// - specs: comma-separated string, e.g. "24 Cores, 5.8GHz Boost, LGA1700".
+// - specs: "|"-separated string, e.g. "24 Cores | 5.8GHz Boost | LGA1700".
+//   Falls back to splitting on "," if the cell has no "|" at all, so plain
+//   comma-separated spec lists (with no commas inside a single spec) still work.
 // - featured: TRUE/FALSE/1/0/yes/no.
 // - status: "active" or "inactive" (defaults to active).
 // - Rows are matched to existing products by slug (derived from name) and
@@ -78,8 +81,8 @@ async function main() {
     const categoryName = getField(row, 'category')
     const priceRaw = getField(row, 'price')
 
-    if (!name || !categoryName || !priceRaw) {
-      console.warn(`Row ${rowNum}: skipped — missing required field (name/category/price).`)
+    if (!name || !categoryName) {
+      console.warn(`Row ${rowNum}: skipped — missing required field (name/category).`)
       skipped++
       continue
     }
@@ -96,9 +99,10 @@ async function main() {
       categoryCache.set(categoryName.toLowerCase(), categoryId)
     }
 
-    const price = priceRaw.startsWith('₹') ? priceRaw : `₹${priceRaw}`
+    const price = !priceRaw ? '₹0' : priceRaw.startsWith('₹') ? priceRaw : `₹${priceRaw}`
     const specsRaw = getField(row, 'specs')
-    const specs = specsRaw ? specsRaw.split(',').map((s) => s.trim()).filter(Boolean) : []
+    const specsDelimiter = specsRaw.includes('|') ? '|' : ','
+    const specs = specsRaw ? specsRaw.split(specsDelimiter).map((s) => s.trim()).filter(Boolean) : []
     const stockRaw = getField(row, 'stock')
     const originalPriceRaw = getField(row, 'originalprice', 'original price')
     const statusRaw = getField(row, 'status').toLowerCase()

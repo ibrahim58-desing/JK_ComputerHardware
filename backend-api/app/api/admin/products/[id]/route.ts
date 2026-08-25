@@ -65,8 +65,8 @@ export async function PUT(
     if (data.shortDescription !== undefined)
       updateData.shortDescription = data.shortDescription
     if (data.price !== undefined) {
-      updateData.price = data.price
-      updateData.numericPrice = parsePriceToNumber(data.price)
+      updateData.price = data.price || '₹0'
+      updateData.numericPrice = parsePriceToNumber(data.price || '₹0')
     }
     if (data.originalPrice !== undefined) updateData.originalPrice = data.originalPrice || null
     if (data.stock !== undefined) updateData.stock = data.stock

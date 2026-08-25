@@ -1,22 +1,25 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 import { ProductCard } from '@/components/product-card'
 import { type Product } from '@/lib/products'
-import { Filter, X, SlidersHorizontal, Tag, Banknote, Layers, ChevronDown } from 'lucide-react'
+import {
+  Filter,
+  X,
+  SlidersHorizontal,
+  Tag,
+  Banknote,
+  Layers,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 
 type PriceFilter = 'All' | 'Under ₹10k' | '₹10k - ₹30k' | 'Above ₹30k'
 
 const priceFilters: PriceFilter[] = ['All', 'Under ₹10k', '₹10k - ₹30k', 'Above ₹30k']
-
-function matchesPrice(price: number, filter: PriceFilter): boolean {
-  if (filter === 'All') return true
-  if (filter === 'Under ₹10k') return price < 10000
-  if (filter === '₹10k - ₹30k') return price >= 10000 && price <= 30000
-  return price > 30000
-}
 
 function FilterOption({
   label,
@@ -47,87 +50,55 @@ function FilterOption({
 }
 
 export function ProductsExplorer({
-  initialProducts,
+  products,
   whatsappNumber = '',
-  initialCategory,
-  initialBrand,
+  activeCategory,
+  activeBrand,
+  activePrice,
+  categories,
+  brands,
+  priceCounts,
+  pagination,
 }: {
-  initialProducts: Product[]
+  products: Product[]
   whatsappNumber?: string
-  initialCategory?: string
-  initialBrand?: string
+  activeCategory: string
+  activeBrand: string
+  activePrice: PriceFilter
+  categories: { name: string; count: number }[]
+  brands: { name: string; count: number }[]
+  priceCounts: Record<PriceFilter, number>
+  pagination: { page: number; pageSize: number; totalCount: number; totalPages: number }
 }) {
   const router = useRouter()
-
-  const [activeCategory, setActiveCategory] = useState<string>(initialCategory || 'All')
-  const [activeBrand, setActiveBrand] = useState<string>(initialBrand || 'All')
-  const [activePrice, setActivePrice] = useState<PriceFilter>('All')
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-  const isFirstRun = useRef(true)
-
-  // Derive categories and brands dynamically from actual products
-  const dynamicCategories = useMemo(() => {
-    const cats = [...new Set(initialProducts.map((p) => p.category))]
-    return cats.sort()
-  }, [initialProducts])
-
-  const dynamicBrands = useMemo(() => {
-    const brs = [...new Set(initialProducts.map((p) => p.brand).filter(Boolean))]
-    return brs.sort()
-  }, [initialProducts])
-
-  const categoryCounts = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const p of initialProducts) map.set(p.category, (map.get(p.category) || 0) + 1)
-    return map
-  }, [initialProducts])
-
-  const brandCounts = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const p of initialProducts) {
-      if (!p.brand) continue
-      map.set(p.brand, (map.get(p.brand) || 0) + 1)
-    }
-    return map
-  }, [initialProducts])
-
-  const priceCounts = useMemo(() => {
-    const map = new Map<PriceFilter, number>()
-    for (const f of priceFilters) {
-      map.set(f, initialProducts.filter((p) => matchesPrice(p.numericPrice, f)).length)
-    }
-    return map
-  }, [initialProducts])
-
-  const visible = initialProducts.filter((p) => {
-    if (activeCategory !== 'All' && p.category !== activeCategory) return false
-    if (activeBrand !== 'All' && p.brand !== activeBrand) return false
-    if (!matchesPrice(p.numericPrice, activePrice)) return false
-    return true
-  })
 
   const hasActiveFilters = activeCategory !== 'All' || activeBrand !== 'All' || activePrice !== 'All'
 
-  const clearAllFilters = () => {
-    setActiveCategory('All')
-    setActiveBrand('All')
-    setActivePrice('All')
+  // Navigating to a new URL re-runs the server query with the new filters —
+  // that's the source of truth now, not local state, so pagination and
+  // facet counts stay correct at catalog scale.
+  function navigate(next: { category?: string; brand?: string; price?: PriceFilter; page?: number }) {
+    const params = new URLSearchParams()
+    const category = next.category ?? activeCategory
+    const brand = next.brand ?? activeBrand
+    const price = next.price ?? activePrice
+    const page = next.page ?? 1
+
+    if (category !== 'All') params.set('category', category)
+    if (brand !== 'All') params.set('brand', brand)
+    if (price !== 'All') params.set('price', price)
+    if (page > 1) params.set('page', String(page))
+
+    const qs = params.toString()
+    router.push(qs ? `/products?${qs}` : '/products')
+    setMobileFiltersOpen(false)
   }
 
-  // Keep the URL in sync so filtered views are shareable/bookmarkable and
-  // links like "Shop CPU" elsewhere on the site land pre-filtered.
-  useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false
-      return
-    }
-    const params = new URLSearchParams()
-    if (activeCategory !== 'All') params.set('category', activeCategory)
-    if (activeBrand !== 'All') params.set('brand', activeBrand)
-    const qs = params.toString()
-    router.replace(qs ? `/products?${qs}` : '/products', { scroll: false })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCategory, activeBrand])
+  const clearAllFilters = () => navigate({ category: 'All', brand: 'All', price: 'All', page: 1 })
+
+  const rangeStart = pagination.totalCount === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1
+  const rangeEnd = Math.min(pagination.page * pagination.pageSize, pagination.totalCount)
 
   const filterSections = (
     <div className="space-y-8">
@@ -137,20 +108,20 @@ export function ProductsExplorer({
           <Layers size={14} className="text-primary/60" />
           Category
         </h3>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 max-h-80 overflow-y-auto pr-1">
           <FilterOption
             label="All"
-            count={initialProducts.length}
+            count={priceCounts.All}
             active={activeCategory === 'All'}
-            onClick={() => setActiveCategory('All')}
+            onClick={() => navigate({ category: 'All', page: 1 })}
           />
-          {dynamicCategories.map((f) => (
+          {categories.map((c) => (
             <FilterOption
-              key={f}
-              label={f}
-              count={categoryCounts.get(f) || 0}
-              active={activeCategory === f}
-              onClick={() => setActiveCategory(f)}
+              key={c.name}
+              label={c.name}
+              count={c.count}
+              active={activeCategory === c.name}
+              onClick={() => navigate({ category: c.name, page: 1 })}
             />
           ))}
         </div>
@@ -162,20 +133,20 @@ export function ProductsExplorer({
           <Tag size={14} className="text-primary/60" />
           Brand
         </h3>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 max-h-80 overflow-y-auto pr-1">
           <FilterOption
             label="All"
-            count={initialProducts.length}
+            count={priceCounts.All}
             active={activeBrand === 'All'}
-            onClick={() => setActiveBrand('All')}
+            onClick={() => navigate({ brand: 'All', page: 1 })}
           />
-          {dynamicBrands.map((b) => (
+          {brands.map((b) => (
             <FilterOption
-              key={b}
-              label={b}
-              count={brandCounts.get(b) || 0}
-              active={activeBrand === b}
-              onClick={() => setActiveBrand(b)}
+              key={b.name}
+              label={b.name}
+              count={b.count}
+              active={activeBrand === b.name}
+              onClick={() => navigate({ brand: b.name, page: 1 })}
             />
           ))}
         </div>
@@ -192,9 +163,9 @@ export function ProductsExplorer({
             <FilterOption
               key={p}
               label={p}
-              count={priceCounts.get(p) || 0}
+              count={priceCounts[p] || 0}
               active={activePrice === p}
-              onClick={() => setActivePrice(p)}
+              onClick={() => navigate({ price: p, page: 1 })}
             />
           ))}
         </div>
@@ -252,12 +223,6 @@ export function ProductsExplorer({
                   </button>
                 </div>
                 {filterSections}
-                <button
-                  onClick={() => setMobileFiltersOpen(false)}
-                  className="mt-8 w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground"
-                >
-                  Show {visible.length} Results
-                </button>
               </motion.div>
             </>
           )}
@@ -292,7 +257,8 @@ export function ProductsExplorer({
         <div className="flex-1">
           <div className="mb-8 flex items-center justify-between rounded-3xl border border-card-border bg-card px-8 py-5 shadow-blue">
             <h2 className="font-heading text-lg font-bold text-foreground">
-              Showing <span className="text-primary">{visible.length}</span> Products
+              Showing <span className="text-primary">{rangeStart}-{rangeEnd}</span> of{' '}
+              <span className="text-primary">{pagination.totalCount}</span> Products
             </h2>
             {hasActiveFilters && (
               <button
@@ -306,7 +272,7 @@ export function ProductsExplorer({
           </div>
 
           <LayoutGroup>
-            {visible.length === 0 ? (
+            {products.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -333,7 +299,7 @@ export function ProductsExplorer({
                 className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
               >
                 <AnimatePresence mode="popLayout">
-                  {visible.map((p) => (
+                  {products.map((p) => (
                     <motion.div
                       key={p.id}
                       layout
@@ -349,6 +315,31 @@ export function ProductsExplorer({
               </motion.div>
             )}
           </LayoutGroup>
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-10 flex items-center justify-center gap-2">
+              <button
+                onClick={() => navigate({ page: pagination.page - 1 })}
+                disabled={pagination.page <= 1}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-card-border bg-card text-text-secondary transition-colors hover:border-primary hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+                aria-label="Previous page"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="px-4 text-sm font-semibold text-foreground">
+                Page {pagination.page} of {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => navigate({ page: pagination.page + 1 })}
+                disabled={pagination.page >= pagination.totalPages}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-card-border bg-card text-text-secondary transition-colors hover:border-primary hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+                aria-label="Next page"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </section>

@@ -7,14 +7,10 @@ import { ProductCard } from '@/components/product-card'
 import { prisma } from '@/lib/prisma'
 import { getSiteSettings, whatsappHref } from '@/lib/settings'
 
-export async function generateStaticParams() {
-  const products = await prisma.product.findMany({
-    select: { id: true }
-  })
-  return products.map((p) => ({
-    id: p.id.toString(),
-  }))
-}
+// No generateStaticParams here on purpose: pre-building a static page per
+// product stopped working once the catalog grew to ~1900 products (it was
+// crashing Next's build worker pool) and doesn't make sense anyway for a
+// catalog that changes via the admin panel — this renders per-request instead.
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -50,11 +46,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const waMessage = `Hi JK Infosystem! I am interested in buying ${product.name}. Please share availability and details.`
 
   const relatedDbProducts = await prisma.product.findMany({
-    where: { 
+    where: {
       categoryId: productData.categoryId,
       id: { not: productData.id },
       status: 'active',
-      image: { not: '/placeholder.jpg' },
     },
     include: { category: true },
     take: 4,
@@ -112,7 +107,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
             {/* Product Details Area */}
             <div className="flex flex-col justify-center">
-              <h1 className="font-heading text-3xl font-extrabold text-foreground sm:text-4xl">
+              <h1 className="text-3xl font-extrabold text-foreground sm:text-4xl">
                 {product.name}
               </h1>
               <div className="mt-4 flex flex-wrap items-center gap-4">

@@ -17,14 +17,29 @@ import {
   FacebookIcon,
   YoutubeIcon,
 } from '@/components/social-icons'
-import { type SiteSettings, whatsappHref, telHref } from '@/lib/settings'
+import { type SiteSettings, whatsappHref, telHref, mailHref } from '@/lib/settings'
 
 export function ContactInfo({ settings }: { settings: SiteSettings }) {
   const info = [
-    { icon: MapPin, text: settings.contact_address || 'Address coming soon' },
-    { icon: Phone, text: settings.contact_phone || 'Phone coming soon' },
-    { icon: Mail, text: settings.contact_email || 'Email coming soon' },
-    { icon: Clock, text: settings.working_hours || 'Hours coming soon' },
+    {
+      icon: MapPin,
+      text: settings.contact_address || 'Address coming soon',
+      href: settings.google_maps_url || undefined,
+      external: true,
+    },
+    {
+      icon: Phone,
+      text: settings.contact_phone || 'Phone coming soon',
+      href: settings.contact_phone ? telHref(settings.contact_phone) : undefined,
+      external: false,
+    },
+    {
+      icon: Mail,
+      text: settings.contact_email || 'Email coming soon',
+      href: settings.contact_email ? mailHref(settings.contact_email) : undefined,
+      external: false,
+    },
+    { icon: Clock, text: settings.working_hours || 'Hours coming soon', href: undefined, external: false },
   ]
   const socialLinks = [
     { Icon: InstagramIcon, href: settings.instagram_url },
@@ -43,9 +58,20 @@ export function ContactInfo({ settings }: { settings: SiteSettings }) {
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <i.icon size={20} />
             </div>
-            <span className="pt-1.5 text-sm leading-relaxed text-foreground">
-              {i.text}
-            </span>
+            {i.href ? (
+              <a
+                href={i.href}
+                target={i.external ? '_blank' : undefined}
+                rel={i.external ? 'noopener noreferrer' : undefined}
+                className="pt-1.5 text-sm leading-relaxed text-foreground transition-colors hover:text-primary"
+              >
+                {i.text}
+              </a>
+            ) : (
+              <span className="pt-1.5 text-sm leading-relaxed text-foreground">
+                {i.text}
+              </span>
+            )}
           </li>
         ))}
       </ul>

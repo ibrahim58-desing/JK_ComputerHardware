@@ -18,7 +18,7 @@ export const createProductSchema = z.object({
   name: z.string().min(1, 'Product name is required').max(200),
   description: z.string().default(''),
   shortDescription: z.string().max(500).default(''),
-  price: z.string().min(1, 'Price is required'),
+  price: z.string().max(50).default(''),
   originalPrice: z.string().max(50).nullable().optional(),
   stock: z.number().int().min(0).default(0),
   brand: z.string().max(100).default(''),

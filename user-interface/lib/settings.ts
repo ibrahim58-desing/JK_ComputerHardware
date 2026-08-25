@@ -43,3 +43,7 @@ export function telHref(phone: string): string {
   const digits = phone.replace(/[^0-9+]/g, '')
   return digits ? `tel:${digits}` : '#'
 }
+
+export function mailHref(email: string): string {
+  return email.trim() ? `mailto:${email.trim()}` : '#'
+}
