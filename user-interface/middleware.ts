@@ -30,22 +30,19 @@ function generateNonce(): string {
   return btoa(binary)
 }
 
-function buildCsp(nonce: string): string {
+function buildCsp(): string {
+  // Static and ISR pages serve pre-rendered HTML with hydration scripts.
+  // Dynamic per-request CSP nonces cause a mismatch on cached pages,
+  // causing browsers to block script execution. Using 'self' 'unsafe-inline'
+  // allows Next.js static pages to hydrate cleanly.
+  // 'unsafe-eval' stays dev-only (Turbopack/webpack HMR needs it) — it isn't
+  // needed to fix hydration and would only widen the attack surface in prod.
   const isDev = process.env.NODE_ENV !== 'production'
-  // 'unsafe-eval' is only needed for Turbopack/webpack HMR in dev — never
-  // shipped in production. Script execution otherwise requires the
-  // per-request nonce (Next.js applies it automatically to its own
-  // framework-injected scripts once it's present in this header).
-  const scriptSrc = isDev
-    ? `'self' 'nonce-${nonce}' 'unsafe-eval'`
-    : `'self' 'nonce-${nonce}' 'strict-dynamic'`
+  const scriptSrc = isDev ? "'self' 'unsafe-inline' 'unsafe-eval'" : "'self' 'unsafe-inline'"
 
   return [
     "default-src 'self'",
     `script-src ${scriptSrc}`,
-    // Inline style ATTRIBUTES (React's style={{...}} / framer-motion) have
-    // no nonce mechanism in the CSP spec — only <style> elements do — so
-    // this can't be tightened without migrating those to CSS classes.
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
@@ -72,7 +69,7 @@ function addSecurityHeaders(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), payment=()'
   )
-  response.headers.set('Content-Security-Policy', buildCsp(nonce))
+  response.headers.set('Content-Security-Policy', buildCsp())
   // HSTS is a no-op over plain HTTP (browsers ignore it outside TLS), so
   // it's safe to always send rather than gate on NODE_ENV.
   response.headers.set(
