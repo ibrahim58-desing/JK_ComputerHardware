@@ -10,6 +10,8 @@ export const metadata: Metadata = {
     "JK Infosystem — a Pan-India technology partner delivering genuine computers, imaging solutions and IT services since 1999. Learn our story and values.",
 }
 
+export const revalidate = 300
+
 export default function AboutPage() {
   return (
     <>

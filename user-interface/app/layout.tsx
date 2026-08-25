@@ -8,15 +8,17 @@ import { FloatingButtons } from '@/components/floating-buttons'
 import { PageTransition } from '@/components/page-transition'
 import { getSiteSettings } from '@/lib/settings'
 
-const inter = Inter({ variable: '--font-inter', subsets: ['latin'] })
+const inter = Inter({ variable: '--font-inter', subsets: ['latin'], display: 'swap' })
 const orbitron = Orbitron({
   variable: '--font-orbitron',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
+  display: 'swap',
 })
 const jetbrains = JetBrains_Mono({
   variable: '--font-jetbrains',
   subsets: ['latin'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -37,17 +39,12 @@ export const viewport: Viewport = {
   themeColor: '#0057ff',
 }
 
-import { headers } from 'next/headers'
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const headersList = await headers()
-  const pathname = headersList.get('x-pathname') || ''
-  const isAdmin = pathname.startsWith('/admin')
-  const settings = isAdmin ? null : await getSiteSettings()
+  const settings = await getSiteSettings()
 
   return (
     <html
@@ -55,16 +52,12 @@ export default async function RootLayout({
       className={`${inter.variable} ${orbitron.variable} ${jetbrains.variable} bg-background`}
     >
       <body className="font-sans antialiased overflow-x-hidden">
-        {!isAdmin && <Navbar />}
-        {!isAdmin ? (
-          <PageTransition>
-            <main>{children}</main>
-          </PageTransition>
-        ) : (
+        <Navbar />
+        <PageTransition>
           <main>{children}</main>
-        )}
-        {settings && <Footer settings={settings} />}
-        {settings && <FloatingButtons whatsappNumber={settings.whatsapp_number} />}
+        </PageTransition>
+        <Footer settings={settings} />
+        <FloatingButtons whatsappNumber={settings.whatsapp_number} />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

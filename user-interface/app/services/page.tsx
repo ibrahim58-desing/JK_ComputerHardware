@@ -13,6 +13,8 @@ export const metadata: Metadata = {
     'End-to-end technology services: PC building, laptop & mobile repair, screen replacement, data recovery, OS installation, hardware upgrades and warranty support.',
 }
 
+export const revalidate = 300
+
 export default function ServicesPage() {
   return (
     <>

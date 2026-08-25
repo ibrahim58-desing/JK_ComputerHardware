@@ -14,6 +14,8 @@ export const metadata: Metadata = {
     'Get in touch with JK Infosystem — your trusted Pan-India technology partner. Visit, call, or send us a message.',
 }
 
+export const revalidate = 300
+
 export default async function ContactPage() {
   const settings = await getSiteSettings()
   return (

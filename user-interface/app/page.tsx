@@ -10,6 +10,8 @@ import { CtaBanner } from '@/components/cta-banner'
 import { prisma } from '@/lib/prisma'
 import { getSiteSettings } from '@/lib/settings'
 
+export const revalidate = 60
+
 export default async function HomePage() {
   // Independent lookups — run them together instead of one-by-one.
   const [settings, comments, topProductsSetting, homepageCategoriesSetting] = await Promise.all([

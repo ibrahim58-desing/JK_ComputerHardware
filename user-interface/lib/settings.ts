@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 
 export type SiteSettings = {
@@ -25,13 +26,22 @@ const DEFAULTS: SiteSettings = {
   google_maps_url: '',
 }
 
-// Cached per-request so every server component that needs settings can call
-// this freely without hitting the database once per component.
-export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
-  const rows = await prisma.siteSetting.findMany()
-  const map = Object.fromEntries(rows.map((r) => [r.key, r.value]))
-  return { ...DEFAULTS, ...map }
-})
+// Cached across requests (5 min) so every page render doesn't hit the
+// database — admin changes to settings show up within that window.
+const getCachedSiteSettings = unstable_cache(
+  async (): Promise<SiteSettings> => {
+    const rows = await prisma.siteSetting.findMany()
+    const map = Object.fromEntries(rows.map((r) => [r.key, r.value]))
+    return { ...DEFAULTS, ...map }
+  },
+  ['site-settings'],
+  { tags: ['settings'], revalidate: 300 }
+)
+
+// Also deduped per-request via React's cache() so multiple components
+// calling this in the same render don't even hit the unstable_cache lookup
+// more than once.
+export const getSiteSettings = cache(getCachedSiteSettings)
 
 export function whatsappHref(phone: string, message?: string): string {
   const digits = phone.replace(/[^0-9]/g, '')

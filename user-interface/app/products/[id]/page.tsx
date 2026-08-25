@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { ArrowLeft, MessageCircle, CheckCircle2, ShieldCheck, Truck, Tag } from 'lucide-react'
 import { categoryIcons, badgeClasses } from '@/lib/products'
 import { ProductCard } from '@/components/product-card'
+import { ProductGallery } from '@/components/product-gallery'
 import { prisma } from '@/lib/prisma'
 import { getSiteSettings, whatsappHref } from '@/lib/settings'
 
@@ -11,6 +11,8 @@ import { getSiteSettings, whatsappHref } from '@/lib/settings'
 // product stopped working once the catalog grew to ~1900 products (it was
 // crashing Next's build worker pool) and doesn't make sense anyway for a
 // catalog that changes via the admin panel — this renders per-request instead.
+
+export const revalidate = 300
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -76,34 +78,15 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
           <div className="grid gap-12 lg:grid-cols-2">
             {/* Product Image Area */}
-            <div className="flex flex-col gap-4">
-              <div className="relative aspect-square overflow-hidden rounded-3xl border border-card-border bg-surface flex items-center justify-center p-12">
-                <div className="absolute left-6 top-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary z-10">
-                  <Icon size={32} />
-                </div>
-                {product.badge && (
-                  <span
-                    className={`absolute right-6 top-6 rounded-full px-4 py-1.5 font-mono text-sm font-semibold uppercase tracking-wide z-10 ${badgeClasses[product.badge.tone as keyof typeof badgeClasses]}`}
-                  >
-                    {product.badge.label}
-                  </span>
-                )}
-                <div className="relative w-full h-full max-w-sm max-h-sm opacity-90 mix-blend-multiply z-0">
-                   <Image src={product.image} alt={product.name} fill className="object-contain" priority sizes="(max-width: 768px) 100vw, 50vw" />
-                </div>
-              </div>
-              
-              {/* Gallery Images */}
-              {productData.images && productData.images.length > 0 && (
-                <div className="grid grid-cols-4 gap-4">
-                  {productData.images.map((img) => (
-                    <div key={img.id} className="relative aspect-square overflow-hidden rounded-xl border border-card-border bg-surface flex items-center justify-center">
-                       <Image src={img.imageUrl} alt="Gallery" fill className="object-contain mix-blend-multiply p-2" sizes="25vw" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ProductGallery
+              images={[
+                { url: product.image, alt: product.name },
+                ...productData.images.map((img) => ({ url: img.imageUrl, alt: product.name })),
+              ]}
+              icon={<Icon size={32} />}
+              badge={product.badge}
+              badgeClassName={product.badge ? badgeClasses[product.badge.tone as keyof typeof badgeClasses] : undefined}
+            />
 
             {/* Product Details Area */}
             <div className="flex flex-col justify-center">
