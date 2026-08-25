@@ -13,8 +13,7 @@ export const metadata: Metadata = {
     'End-to-end technology services: PC building, laptop & mobile repair, screen replacement, data recovery, OS installation, hardware upgrades and warranty support.',
 }
 
-// Must stay dynamic — see app/page.tsx for why (CSP nonce vs. static cache).
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export default function ServicesPage() {
   return (

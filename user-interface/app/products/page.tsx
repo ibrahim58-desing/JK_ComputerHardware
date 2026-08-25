@@ -11,8 +11,9 @@ import { getSiteSettings } from '@/lib/settings'
 export const metadata: Metadata = {
   title: 'Products — JK Infosystem',
   description:
-    'Browse our full range of genuine computer hardware — CPUs, GPUs, RAM, storage, monitors, keyboards and mice at honest, competitive prices.',
 }
+
+export const revalidate = 60
 
 const PAGE_SIZE = 24
 

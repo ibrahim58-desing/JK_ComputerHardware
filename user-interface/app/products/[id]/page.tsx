@@ -7,10 +7,7 @@ import { ProductGallery } from '@/components/product-gallery'
 import { prisma } from '@/lib/prisma'
 import { getSiteSettings, whatsappHref } from '@/lib/settings'
 
-// No generateStaticParams here on purpose: pre-building a static page per
-// product stopped working once the catalog grew to ~1900 products (it was
-// crashing Next's build worker pool) and doesn't make sense anyway for a
-// catalog that changes via the admin panel — this renders per-request instead.
+export const revalidate = 300
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params

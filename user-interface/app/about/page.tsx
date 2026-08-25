@@ -10,8 +10,7 @@ export const metadata: Metadata = {
     "JK Infosystem — a Pan-India technology partner delivering genuine computers, imaging solutions and IT services since 1999. Learn our story and values.",
 }
 
-// Must stay dynamic — see app/page.tsx for why (CSP nonce vs. static cache).
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export default function AboutPage() {
   return (

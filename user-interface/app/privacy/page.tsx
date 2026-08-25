@@ -7,8 +7,7 @@ export const metadata: Metadata = {
   description: 'How JK Infosystem collects, uses, and protects your information.',
 }
 
-// Must stay dynamic — see app/page.tsx for why (CSP nonce vs. static cache).
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export default async function PrivacyPage() {
   const settings = await getSiteSettings()
