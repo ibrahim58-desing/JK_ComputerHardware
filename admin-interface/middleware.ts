@@ -258,5 +258,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Static assets never need CSRF/JWT/CSP handling — excluding them by
+  // extension keeps this from running per-image on every catalog browse.
+  matcher: [
+    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|css|js|woff2?|ttf|otf|map|txt|xml|json)$).*)',
+  ],
 }

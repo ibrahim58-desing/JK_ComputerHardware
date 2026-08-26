@@ -49,25 +49,32 @@ export async function POST(
       orderBy: { displayOrder: 'desc' },
       select: { displayOrder: true },
     })
-    let currentOrder = (maxOrder?.displayOrder ?? -1) + 1
+    const startOrder = (maxOrder?.displayOrder ?? -1) + 1
 
-    const savedImages = []
-    for (const file of files) {
-      try {
-        const imageUrl = await saveUploadedImage(file)
-        const image = await prisma.productImage.create({
-          data: {
-            productId,
-            imageUrl,
-            displayOrder: currentOrder++,
-          },
-        })
-        savedImages.push(image)
-      } catch (err) {
-        // Log but continue with other files
-        console.error('[Upload] Failed to save image:', err)
-      }
-    }
+    // Resize/re-encode each file concurrently instead of one at a time —
+    // sharp's own worker threads (bounded by libuv's thread pool) keep this
+    // from overwhelming the CPU even for a large gallery upload. Order is
+    // assigned by each file's position in the request, not completion order,
+    // so results stay deterministic despite running in parallel.
+    const results = await Promise.all(
+      files.map(async (file, index) => {
+        try {
+          const imageUrl = await saveUploadedImage(file)
+          return await prisma.productImage.create({
+            data: {
+              productId,
+              imageUrl,
+              displayOrder: startOrder + index,
+            },
+          })
+        } catch (err) {
+          // Log but continue with other files
+          console.error('[Upload] Failed to save image:', err)
+          return null
+        }
+      })
+    )
+    const savedImages = results.filter((image): image is NonNullable<typeof image> => image !== null)
 
     if (savedImages.length === 0) {
       return errorResponse('Failed to upload any images', 400)

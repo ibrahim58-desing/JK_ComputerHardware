@@ -50,6 +50,20 @@ function getField(row: Row, ...keys: string[]): string {
   return ''
 }
 
+function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = []
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size))
+  }
+  return chunks
+}
+
+// Bounded concurrency, not full parallelism — a 20,000-row import firing
+// every update at once would exhaust the shared connection pool that the
+// live storefront and admin panel are also using.
+const UPDATE_CONCURRENCY = 25
+const CREATE_BATCH_SIZE = 500
+
 async function main() {
   const filePath = process.argv[2]
   if (!filePath) {
@@ -70,9 +84,12 @@ async function main() {
 
   const categoryCache = new Map<string, number>()
 
-  let created = 0
-  let updated = 0
   let skipped = 0
+
+  // Pass 1: validate rows and resolve each one's category — cheap, since
+  // categories are cached after their first upsert and there are only ever
+  // a handful of them, unlike products.
+  const parsed: { slug: string; data: Record<string, unknown> }[] = []
 
   for (const [index, row] of rows.entries()) {
     const rowNum = index + 2 // +1 for header, +1 for 1-indexing
@@ -109,33 +126,57 @@ async function main() {
 
     const slug = generateSlug(name)
 
-    const data = {
-      name,
-      description: getField(row, 'description'),
-      shortDescription: getField(row, 'shortdescription', 'short description'),
-      price,
-      numericPrice: parsePriceToNumber(price),
-      originalPrice: originalPriceRaw ? (originalPriceRaw.startsWith('₹') ? originalPriceRaw : `₹${originalPriceRaw}`) : null,
-      stock: stockRaw ? parseInt(stockRaw, 10) || 0 : 0,
-      brand: getField(row, 'brand'),
-      specs: specs as any,
-      image: getField(row, 'image') || '/placeholder.jpg',
-      featured: parseBoolean(getField(row, 'featured')),
-      status: statusRaw === 'inactive' ? 'inactive' : 'active',
-      categoryId,
-    }
-
-    const existing = await prisma.product.findUnique({ where: { slug } })
-    if (existing) {
-      await prisma.product.update({ where: { slug }, data })
-      updated++
-    } else {
-      await prisma.product.create({ data: { ...data, slug } })
-      created++
-    }
+    parsed.push({
+      slug,
+      data: {
+        name,
+        description: getField(row, 'description'),
+        shortDescription: getField(row, 'shortdescription', 'short description'),
+        price,
+        numericPrice: parsePriceToNumber(price),
+        originalPrice: originalPriceRaw ? (originalPriceRaw.startsWith('₹') ? originalPriceRaw : `₹${originalPriceRaw}`) : null,
+        stock: stockRaw ? parseInt(stockRaw, 10) || 0 : 0,
+        brand: getField(row, 'brand'),
+        specs: specs as any,
+        image: getField(row, 'image') || '/placeholder.jpg',
+        featured: parseBoolean(getField(row, 'featured')),
+        status: statusRaw === 'inactive' ? 'inactive' : 'active',
+        categoryId,
+      },
+    })
   }
 
-  console.log(`\nDone. Created: ${created}, Updated: ${updated}, Skipped: ${skipped}`)
+  // Pass 2: one query to find out which slugs already exist, instead of a
+  // findUnique per row.
+  const existingSlugs = new Set(
+    (
+      await prisma.product.findMany({
+        where: { slug: { in: parsed.map((p) => p.slug) } },
+        select: { slug: true },
+      })
+    ).map((p) => p.slug)
+  )
+
+  const toCreate = parsed.filter((p) => !existingSlugs.has(p.slug))
+  const toUpdate = parsed.filter((p) => existingSlugs.has(p.slug))
+
+  // New products can go in as bulk inserts.
+  for (const batch of chunk(toCreate, CREATE_BATCH_SIZE)) {
+    await prisma.product.createMany({
+      data: batch.map((p) => ({ ...p.data, slug: p.slug }) as any),
+    })
+  }
+
+  // Existing products each need their own UPDATE (the data differs per
+  // row), but running a bounded number concurrently instead of one at a
+  // time turns ~2 sequential round trips per row into a fraction of that.
+  for (const batch of chunk(toUpdate, UPDATE_CONCURRENCY)) {
+    await Promise.all(
+      batch.map((p) => prisma.product.update({ where: { slug: p.slug }, data: p.data as any }))
+    )
+  }
+
+  console.log(`\nDone. Created: ${toCreate.length}, Updated: ${toUpdate.length}, Skipped: ${skipped}`)
 }
 
 main()

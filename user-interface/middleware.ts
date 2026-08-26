@@ -22,14 +22,6 @@ const PROTECTED_PAGE_ROUTES = ['/admin']
 const PROTECTED_API_ROUTES = ['/api/admin']
 const PUBLIC_ADMIN_ROUTES = ['/admin/login']
 
-function generateNonce(): string {
-  const bytes = new Uint8Array(16)
-  crypto.getRandomValues(bytes)
-  let binary = ''
-  for (const b of bytes) binary += String.fromCharCode(b)
-  return btoa(binary)
-}
-
 function buildCsp(): string {
   // Static and ISR pages serve pre-rendered HTML with hydration scripts.
   // Dynamic per-request CSP nonces cause a mismatch on cached pages,
@@ -59,7 +51,6 @@ function buildCsp(): string {
 
 function addSecurityHeaders(
   response: NextResponse,
-  nonce: string,
   pathname: string
 ): NextResponse {
   response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -116,9 +107,8 @@ async function refreshAccessToken(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const method = request.method
-  const nonce = generateNonce()
   const withHeaders = (response: NextResponse) =>
-    addSecurityHeaders(response, nonce, pathname)
+    addSecurityHeaders(response, pathname)
 
   const isProtectedPage = PROTECTED_PAGE_ROUTES.some((route) =>
     pathname.startsWith(route)
@@ -131,7 +121,6 @@ export async function middleware(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', pathname)
-  requestHeaders.set('x-nonce', nonce)
 
   // CSRF validation for mutating admin API requests
   if (requiresCsrfValidation(pathname, method)) {
@@ -247,5 +236,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Static assets (uploaded product photos, brand logos, icons, fonts) never
+  // need CSRF/JWT/CSP handling — excluding them by extension keeps this from
+  // running per-image on every catalog browse, and matters most in local dev
+  // where there's no nginx in front to already short-circuit /uploads/.
+  matcher: [
+    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|css|js|woff2?|ttf|otf|map|txt|xml|json)$).*)',
+  ],
 }

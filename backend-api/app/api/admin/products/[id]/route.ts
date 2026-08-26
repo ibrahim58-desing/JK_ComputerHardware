@@ -115,13 +115,12 @@ export async function DELETE(
     })
     if (!product) return notFoundError('Product not found')
 
-    // Delete uploaded images from disk
-    for (const img of product.images) {
-      await deleteUploadedImage(img.imageUrl)
-    }
-    if (product.image) {
-      await deleteUploadedImage(product.image)
-    }
+    // Delete uploaded images from disk — independent file operations, no
+    // reason to wait on them one at a time.
+    await Promise.all([
+      ...product.images.map((img) => deleteUploadedImage(img.imageUrl)),
+      ...(product.image ? [deleteUploadedImage(product.image)] : []),
+    ])
 
     // Delete product (cascade deletes images in DB)
     await prisma.product.delete({ where: { id: productId } })

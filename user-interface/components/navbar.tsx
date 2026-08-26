@@ -6,7 +6,14 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X, Search, MessageCircle } from 'lucide-react'
-import { Product } from '@/lib/products'
+
+type SearchSuggestion = {
+  id: number
+  name: string
+  price: string
+  image: string
+  category: string
+}
 
 const links = [
   { href: '/', label: 'Home' },
@@ -28,7 +35,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchProducts, setSearchProducts] = useState<Product[]>([])
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -52,29 +59,41 @@ export function Navbar() {
       }
     }
     document.addEventListener('mousedown', handler)
-    
-    // Fetch products for search
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data) {
-          setSearchProducts(data.data.map((p: any) => ({
-            ...p,
-            category: p.category?.name || 'Hardware'
-          })))
-        }
-      })
-      .catch(err => console.error("Failed to fetch products for search", err))
-      
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const suggestions = searchQuery.trim().length > 0
-    ? searchProducts.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 5)
-    : []
+  // Debounced, server-side search suggestions — only queries once the user
+  // has actually typed something, instead of preloading the whole catalog
+  // on every page mount.
+  useEffect(() => {
+    const query = searchQuery.trim()
+    if (query.length < 2) {
+      setSuggestions([])
+      return
+    }
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      fetch(`/api/products/search?q=${encodeURIComponent(query)}`, { signal: controller.signal })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data) {
+            setSuggestions(data.data.map((p: any) => ({
+              ...p,
+              category: p.category?.name || 'Hardware',
+            })))
+          }
+        })
+        .catch((err) => {
+          if (err.name !== 'AbortError') console.error('Failed to fetch search suggestions', err)
+        })
+    }, 250)
+
+    return () => {
+      clearTimeout(timeout)
+      controller.abort()
+    }
+  }, [searchQuery])
 
   const onDarkHero = DARK_HERO_ROUTES.includes(pathname) && !scrolled
 

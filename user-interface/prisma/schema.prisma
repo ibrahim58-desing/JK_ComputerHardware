@@ -65,6 +65,9 @@ model Product {
   @@index([featured])
   @@index([createdAt])
   @@index([numericPrice])
+  @@index([brand])
+  @@index([status, categoryId, createdAt])
+  @@index([status, brand])
   @@map("products")
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { adminFetch } from '@/lib/admin-fetch'
 import { Save, Loader2, Home, Star, Search, X, ArrowUp, ArrowDown, ImageIcon, Phone, Lock, CheckCircle2 } from 'lucide-react'
 
@@ -34,7 +34,11 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [categories, setCategories] = useState<any[]>([])
-  const [allProducts, setAllProducts] = useState<any[]>([])
+  // Products the picker knows about — hydrated on demand (selected chips by
+  // id, search results by query) instead of preloading the whole catalog.
+  const [productCache, setProductCache] = useState<Map<string, any>>(new Map())
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchLoading, setSearchLoading] = useState(false)
   const [productSearch, setProductSearch] = useState('')
 
   // Settings state
@@ -54,13 +58,9 @@ export default function SettingsPage() {
     Promise.all([
       adminFetch('/api/admin/categories').then(r => r.json()),
       adminFetch('/api/admin/settings').then(r => r.json()),
-      adminFetch('/api/admin/products?status=active').then(r => r.json()),
-    ]).then(([catsRes, settingsRes, productsRes]) => {
+    ]).then(([catsRes, settingsRes]) => {
       if (catsRes.success) {
         setCategories(catsRes.data)
-      }
-      if (productsRes.success) {
-        setAllProducts(productsRes.data)
       }
       if (settingsRes.success) {
         if (settingsRes.data.homepage_categories) {
@@ -89,16 +89,55 @@ export default function SettingsPage() {
     })
   }, [])
 
-  const productById = useMemo(
-    () => new Map(allProducts.map((p) => [p.id.toString(), p])),
-    [allProducts]
-  )
+  // Hydrate the "Selected" chips by id once the saved top_products list is
+  // known — bounded to at most MAX_TOP_PRODUCTS ids, never the full catalog.
+  useEffect(() => {
+    const missing = topProducts.filter((id) => !productCache.has(id))
+    if (missing.length === 0) return
+    adminFetch(`/api/admin/products?ids=${missing.join(',')}&limit=${missing.length}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) {
+          setProductCache((prev) => {
+            const next = new Map(prev)
+            for (const p of data.data.products) next.set(p.id.toString(), p)
+            return next
+          })
+        }
+      })
+      .catch(() => {})
+  }, [topProducts])
 
-  const filteredProducts = useMemo(() => {
-    const q = productSearch.trim().toLowerCase()
-    if (!q) return allProducts
-    return allProducts.filter((p) => p.name.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q))
-  }, [allProducts, productSearch])
+  // Debounced server-side search for the "add a product" list — replaces
+  // preloading every active product just to filter it in the browser.
+  useEffect(() => {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      setSearchLoading(true)
+      const qs = new URLSearchParams({ status: 'active', limit: '20' })
+      if (productSearch.trim()) qs.set('search', productSearch.trim())
+      adminFetch(`/api/admin/products?${qs.toString()}`, { signal: controller.signal })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success) {
+            setSearchResults(data.data.products)
+            setProductCache((prev) => {
+              const next = new Map(prev)
+              for (const p of data.data.products) next.set(p.id.toString(), p)
+              return next
+            })
+          }
+        })
+        .catch((err) => {
+          if (err.name !== 'AbortError') console.error('Failed to search products', err)
+        })
+        .finally(() => setSearchLoading(false))
+    }, 300)
+    return () => {
+      clearTimeout(timeout)
+      controller.abort()
+    }
+  }, [productSearch])
 
   const handleTopProductToggle = (idStr: string) => {
     setTopProducts((prev) => {
@@ -298,7 +337,7 @@ export default function SettingsPage() {
               </h3>
               <div className="space-y-2">
                 {topProducts.map((idStr, index) => {
-                  const product = productById.get(idStr)
+                  const product = productCache.get(idStr)
                   if (!product) return null
                   return (
                     <div
@@ -367,7 +406,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
-              {filteredProducts.map((product) => {
+              {searchResults.map((product) => {
                 const idStr = product.id.toString()
                 const isSelected = topProducts.includes(idStr)
                 return (
@@ -399,10 +438,14 @@ export default function SettingsPage() {
                   </label>
                 )
               })}
-              {filteredProducts.length === 0 && (
+              {!searchLoading && searchResults.length === 0 && (
                 <p className="text-center text-sm text-text-secondary py-6">No products found.</p>
               )}
+              {searchLoading && (
+                <p className="text-center text-sm text-text-secondary py-6">Searching…</p>
+              )}
             </div>
+            <p className="mt-2 text-xs text-text-secondary">Showing the top 20 matches — refine your search to narrow the list.</p>
           </div>
         </div>
 

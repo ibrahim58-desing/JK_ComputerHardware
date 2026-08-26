@@ -3,31 +3,55 @@
 import { useEffect, useState } from 'react'
 import { adminFetch } from '@/lib/admin-fetch'
 import Link from 'next/link'
-import { Plus, Search, Edit, Trash2, Loader2, Image as ImageIcon, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Loader2, Image as ImageIcon, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Toast, useToast } from '@/components/ui/toast'
+
+const PAGE_SIZE = 25
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
   const { toast, showToast, hideToast } = useToast()
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (searchValue: string, pageValue: number, signal?: AbortSignal) => {
     setLoading(true)
-    const res = await adminFetch(`/api/admin/products?search=${search}`)
+    const qs = new URLSearchParams({ page: String(pageValue), limit: String(PAGE_SIZE) })
+    if (searchValue) qs.set('search', searchValue)
+    const res = await adminFetch(`/api/admin/products?${qs.toString()}`, { signal })
     const data = await res.json()
     if (data.success) {
-      setProducts(data.data)
+      setProducts(data.data.products)
+      setTotalPages(data.data.pagination.totalPages)
     }
     setLoading(false)
   }
 
+  // Reset to page 1 whenever the search term changes, and debounce so
+  // typing doesn't fire a full query on every keystroke.
   useEffect(() => {
-    fetchProducts()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      fetchProducts(search, 1, controller.signal)
+      setPage(1)
+    }, 300)
+    return () => {
+      clearTimeout(timeout)
+      controller.abort()
+    }
   }, [search])
+
+  useEffect(() => {
+    if (page === 1) return
+    const controller = new AbortController()
+    fetchProducts(search, page, controller.signal)
+    return () => controller.abort()
+  }, [page])
 
   const handleDeleteConfirmed = async () => {
     if (!deleteTarget) return
@@ -37,7 +61,7 @@ export default function AdminProductsPage() {
       const data = await res.json()
       if (data.success) {
         showToast('success', `"${deleteTarget.name}" was deleted.`)
-        fetchProducts()
+        fetchProducts(search, page)
       } else {
         showToast('error', data.error || 'Failed to delete product')
       }
@@ -171,6 +195,34 @@ export default function AdminProductsPage() {
           </div>
         )}
       </div>
+
+      {!loading && totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-text-secondary">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="flex items-center gap-1 rounded-lg border border-card-border px-3 py-1.5 text-sm font-medium text-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface transition-colors"
+            >
+              <ChevronLeft size={16} />
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="flex items-center gap-1 rounded-lg border border-card-border px-3 py-1.5 text-sm font-medium text-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface transition-colors"
+            >
+              Next
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

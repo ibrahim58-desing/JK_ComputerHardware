@@ -6,6 +6,12 @@ import { RATE_LIMITS } from '@/lib/rate-limit'
 import { successResponse, validationError, serverError } from '@/lib/errors'
 import { ZodError } from 'zod'
 
+// The active comment wall changes with every submission but isn't
+// latency-sensitive to the second — nothing currently calls this GET (the
+// homepage passes comments down as props from a direct Prisma query), but
+// any future caller shouldn't hit the database fresh every time either.
+export const revalidate = 60
+
 export async function GET() {
   try {
     const comments = await prisma.comment.findMany({

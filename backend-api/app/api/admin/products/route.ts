@@ -17,6 +17,9 @@ function generateSlug(name: string): string {
     .substring(0, 200)
 }
 
+const DEFAULT_PAGE_SIZE = 25
+const MAX_PAGE_SIZE = 100
+
 export async function GET(request: NextRequest) {
   try {
     const rateLimitResponse = applyRateLimit(request, 'admin-products', RATE_LIMITS.adminApi)
@@ -25,8 +28,26 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
     const status = searchParams.get('status')
     const categoryId = searchParams.get('categoryId')
+    const ids = searchParams.get('ids')
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1)
+    const limit = Math.min(
+      MAX_PAGE_SIZE,
+      Math.max(1, parseInt(searchParams.get('limit') || '', 10) || DEFAULT_PAGE_SIZE)
+    )
 
     const where: Record<string, unknown> = {}
+
+    // Fetching a known, small set of specific products (e.g. hydrating a
+    // picker's already-selected chips) — bounded by the id list itself, so
+    // pagination doesn't apply.
+    if (ids) {
+      const idList = ids
+        .split(',')
+        .map((id) => parseInt(id.trim(), 10))
+        .filter((id) => Number.isInteger(id))
+        .slice(0, MAX_PAGE_SIZE)
+      where.id = { in: idList }
+    }
 
     if (status && status !== 'all') {
       where.status = status
@@ -43,16 +64,39 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const products = await prisma.product.findMany({
-      where,
-      include: {
-        category: true,
-        images: { orderBy: { displayOrder: 'asc' } },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        // The admin list table only ever renders name/brand/category/price/
+        // status/thumbnail — the gallery images relation is only needed on
+        // the edit page, and pulling it in here joined every image row for
+        // every product on every list load (and every keystroke of search).
+        select: {
+          id: true,
+          name: true,
+          brand: true,
+          price: true,
+          image: true,
+          status: true,
+          featured: true,
+          category: { select: { name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+    ])
 
-    return successResponse(products)
+    return successResponse({
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    })
   } catch (error) {
     return serverError(error)
   }
