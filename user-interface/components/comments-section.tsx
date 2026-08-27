@@ -28,7 +28,7 @@ export function CommentsSection({ initialComments }: { initialComments: CommentI
     setError('')
 
     try {
-      const res = await fetch('/api/comments', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), message: message.trim() }),

@@ -47,7 +47,7 @@ export function resolveImageUrl(path: string): string {
   if (!path) return path
   if (path.startsWith('http://') || path.startsWith('https://')) return path
   if (path.startsWith('/uploads/')) {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || ''
+    const base = process.env.NEXT_PUBLIC_API_URL || ''
     return base ? `${base}${path}` : path
   }
   return path

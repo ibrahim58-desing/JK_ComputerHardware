@@ -22,6 +22,27 @@ const PROTECTED_PAGE_ROUTES = ['/admin']
 const PROTECTED_API_ROUTES = ['/api/admin']
 const PUBLIC_ADMIN_ROUTES = ['/admin/login']
 
+// backend-api lives on its own subdomain (api.jkinfosystem.com) — the
+// storefront and admin panel call it cross-origin, so every /api/ response
+// needs these headers. credentials:true is safe here because the origin is
+// checked against this fixed allowlist rather than reflected/wildcarded.
+const ALLOWED_ORIGINS = [
+  'https://jkinfosystem.com',
+  'https://www.jkinfosystem.com',
+  'https://admin.jkinfosystem.com',
+  'http://localhost:3000',
+  'http://localhost:3001',
+]
+
+function addCorsHeaders(response: NextResponse, origin: string | null): NextResponse {
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    response.headers.set('Access-Control-Allow-Origin', origin)
+    response.headers.set('Access-Control-Allow-Credentials', 'true')
+    response.headers.set('Vary', 'Origin')
+  }
+  return response
+}
+
 function generateNonce(): string {
   const bytes = new Uint8Array(16)
   crypto.getRandomValues(bytes)
@@ -119,9 +140,24 @@ async function refreshAccessToken(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const method = request.method
+  const origin = request.headers.get('origin')
   const nonce = generateNonce()
-  const withHeaders = (response: NextResponse) =>
+  const withHeaders = (response: NextResponse) => {
     addSecurityHeaders(response, nonce, pathname)
+    if (pathname.startsWith('/api/')) addCorsHeaders(response, origin)
+    return response
+  }
+
+  // Preflight requests carry no cookies/CSRF token and must never reach the
+  // auth/CSRF checks below — they just need the CORS headers back.
+  if (method === 'OPTIONS' && pathname.startsWith('/api/')) {
+    const response = new NextResponse(null, { status: 204 })
+    addCorsHeaders(response, origin)
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, x-csrf-token')
+    response.headers.set('Access-Control-Max-Age', '86400')
+    return response
+  }
 
   const isProtectedPage = PROTECTED_PAGE_ROUTES.some((route) =>
     pathname.startsWith(route)

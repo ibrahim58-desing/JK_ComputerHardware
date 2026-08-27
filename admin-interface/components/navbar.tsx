@@ -74,7 +74,7 @@ export function Navbar() {
 
     const controller = new AbortController()
     const timeout = setTimeout(() => {
-      fetch(`/api/products/search?q=${encodeURIComponent(query)}`, { signal: controller.signal })
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/products/search?q=${encodeURIComponent(query)}`, { signal: controller.signal })
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.data) {
