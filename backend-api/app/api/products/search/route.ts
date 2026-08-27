@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
       where: {
         status: 'active',
         OR: [
-          { name: { contains: q, mode: 'insensitive' } },
-          { brand: { contains: q, mode: 'insensitive' } },
+          { name: { contains: q } },
+          { brand: { contains: q } },
         ],
       },
       select: {
