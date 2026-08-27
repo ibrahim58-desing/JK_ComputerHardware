@@ -146,19 +146,31 @@ async function main() {
     })
   }
 
+  // A handful of names in real client spreadsheets repeat with different
+  // specs (variants entered as separate rows). Keep only the last occurrence
+  // per slug — same "last row wins" behavior as re-running this script
+  // twice — so createMany never sees two rows with the same slug in one
+  // batch (it would otherwise fail the unique constraint on the second).
+  const dedupedBySlug = new Map<string, { slug: string; data: Record<string, unknown> }>()
+  for (const row of parsed) dedupedBySlug.set(row.slug, row)
+  const deduped = [...dedupedBySlug.values()]
+  if (deduped.length !== parsed.length) {
+    console.warn(`Note: ${parsed.length - deduped.length} row(s) shared a slug with another row — kept the last one.`)
+  }
+
   // Pass 2: one query to find out which slugs already exist, instead of a
   // findUnique per row.
   const existingSlugs = new Set(
     (
       await prisma.product.findMany({
-        where: { slug: { in: parsed.map((p) => p.slug) } },
+        where: { slug: { in: deduped.map((p) => p.slug) } },
         select: { slug: true },
       })
     ).map((p) => p.slug)
   )
 
-  const toCreate = parsed.filter((p) => !existingSlugs.has(p.slug))
-  const toUpdate = parsed.filter((p) => existingSlugs.has(p.slug))
+  const toCreate = deduped.filter((p) => !existingSlugs.has(p.slug))
+  const toUpdate = deduped.filter((p) => existingSlugs.has(p.slug))
 
   // New products can go in as bulk inserts.
   for (const batch of chunk(toCreate, CREATE_BATCH_SIZE)) {
