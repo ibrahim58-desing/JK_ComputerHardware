@@ -8,6 +8,7 @@ import { TiltCard } from '@/components/tilt-card'
 import {
   type Product,
   badgeClasses,
+  resolveImageUrl,
 } from '@/lib/products'
 import { itemVariants } from '@/components/reveal'
 import { whatsappHref } from '@/lib/settings'
@@ -29,16 +30,11 @@ export function ProductCard({ product, whatsappNumber = '' }: { product: Product
         {/* Product Image */}
         <div className="relative z-10 aspect-[4/3] overflow-hidden bg-surface pointer-events-none">
           <Image
-            src={product.image}
+            src={resolveImageUrl(product.image)}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
             className="object-cover transition-transform duration-500 group-hover:scale-110"
-            // Uploads are already resized/compressed to WebP server-side
-            // (backend-api/lib/upload.ts), and only ever live on backend-api's
-            // filesystem — Next's own optimizer can't reach them across the
-            // three-app split, so this just gets lazy-loading/layout for free.
-            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/0 to-black/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 

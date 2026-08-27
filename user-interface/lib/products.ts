@@ -36,6 +36,23 @@ export type Product = {
   offer?: string | null
 }
 
+// Uploaded product photos live on backend-api's filesystem, not this app's
+// own public/ dir, so Next's image optimizer — which resolves a relative
+// src against its own server — can't reach them directly. Turning a
+// relative /uploads/... path into the full public URL lets the optimizer
+// fetch it as a remote image instead (see images.remotePatterns in
+// next.config.mjs). Local assets (the placeholder, brand logos) are left
+// alone since those really do live in this app's own public/ dir.
+export function resolveImageUrl(path: string): string {
+  if (!path) return path
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  if (path.startsWith('/uploads/')) {
+    const base = process.env.NEXT_PUBLIC_SITE_URL || ''
+    return base ? `${base}${path}` : path
+  }
+  return path
+}
+
 export const categoryIcons: Record<Category, LucideIcon> = {
   CPU: Cpu,
   GPU: Gpu,

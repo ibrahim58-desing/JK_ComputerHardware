@@ -12,6 +12,21 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 86400,
+    // Uploaded product photos are only ever fetched from the public site
+    // domain (nginx proxies /uploads/ there to backend-api) — see
+    // resolveImageUrl() in lib/products.ts for how a path becomes this URL.
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'jkinfosystem.com',
+        pathname: '/uploads/products/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.jkinfosystem.com',
+        pathname: '/uploads/products/**',
+      },
+    ],
   },
   experimental: {
     // Adds integrity hashes to Next's own script tags.

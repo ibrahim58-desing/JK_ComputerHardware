@@ -61,11 +61,6 @@ export function ProductGallery({
             className="object-contain"
             priority
             sizes="(max-width: 768px) 100vw, 50vw"
-            // Uploaded photos only exist on backend-api's filesystem, not
-            // this app's own public/ dir — Next's local optimizer resolves
-            // relative src paths against its own public folder, so without
-            // this it 404s for any image not manually copied over.
-            unoptimized
           />
         </div>
 
@@ -109,7 +104,7 @@ export function ProductGallery({
                 i === index ? 'border-primary' : 'border-card-border hover:border-primary/50'
               }`}
             >
-              <Image src={img.url} alt={img.alt} fill className="object-contain mix-blend-multiply p-2" sizes="25vw" unoptimized />
+              <Image src={img.url} alt={img.alt} fill className="object-contain mix-blend-multiply p-2" sizes="25vw" />
             </button>
           ))}
         </div>
@@ -130,7 +125,7 @@ export function ProductGallery({
           </button>
 
           <div className="relative h-full w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-            <Image src={current.url} alt={current.alt} fill className="object-contain" sizes="100vw" unoptimized />
+            <Image src={current.url} alt={current.alt} fill className="object-contain" sizes="100vw" />
           </div>
 
           {count > 1 && (

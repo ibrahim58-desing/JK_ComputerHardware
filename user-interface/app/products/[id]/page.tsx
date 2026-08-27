@@ -1,7 +1,9 @@
+import { cache } from 'react'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, MessageCircle, CheckCircle2, ShieldCheck, Truck, Tag } from 'lucide-react'
-import { categoryIcons, badgeClasses } from '@/lib/products'
+import { categoryIcons, badgeClasses, resolveImageUrl } from '@/lib/products'
 import { ProductCard } from '@/components/product-card'
 import { ProductGallery } from '@/components/product-gallery'
 import { prisma } from '@/lib/prisma'
@@ -9,17 +11,50 @@ import { getSiteSettings, whatsappHref } from '@/lib/settings'
 
 export const revalidate = 300
 
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params
-  const settings = await getSiteSettings()
-
-  const productData = await prisma.product.findUnique({
-    where: { id: parseInt(resolvedParams.id, 10) },
-    include: { 
+// Wrapped in React's cache() so generateMetadata() and the page component
+// share one DB call per request instead of two — Next doesn't dedupe plain
+// Prisma calls across those two functions on its own.
+const getProduct = cache(async (id: number) => {
+  return prisma.product.findUnique({
+    where: { id },
+    include: {
       images: { orderBy: { displayOrder: 'asc' } },
       category: true,
-    }
+    },
   })
+})
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const product = await getProduct(parseInt(id, 10))
+  if (!product) return {}
+
+  const description = product.shortDescription || product.description?.slice(0, 160) || undefined
+  const image = resolveImageUrl(product.image)
+
+  return {
+    title: `${product.name} — ${product.price} | JK Infosystem`,
+    description,
+    openGraph: {
+      title: product.name,
+      description,
+      images: image ? [{ url: image }] : undefined,
+    },
+  }
+}
+
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+
+  // Independent of each other — no reason to wait on one before starting the other.
+  const [settings, productData] = await Promise.all([
+    getSiteSettings(),
+    getProduct(parseInt(resolvedParams.id, 10)),
+  ])
 
   if (!productData) {
     notFound()
@@ -75,8 +110,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {/* Product Image Area */}
             <ProductGallery
               images={[
-                { url: product.image, alt: product.name },
-                ...productData.images.map((img) => ({ url: img.imageUrl, alt: product.name })),
+                { url: resolveImageUrl(product.image), alt: product.name },
+                ...productData.images.map((img) => ({ url: resolveImageUrl(img.imageUrl), alt: product.name })),
               ]}
               icon={<Icon size={32} />}
               badge={product.badge}

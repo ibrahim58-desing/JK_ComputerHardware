@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import type { Prisma } from '@prisma/client'
+import { unstable_cache } from 'next/cache'
 import { PageHero } from '@/components/page-hero'
 import { ProductBanner } from '@/components/product-banner'
 import { ProductsExplorer } from '@/components/products-explorer'
@@ -27,13 +28,62 @@ function priceRangeWhere(filter: PriceFilter): Prisma.FloatFilter | undefined {
   return undefined
 }
 
+// The category/brand/price-bucket counts scan the entire active catalog and
+// are identical for every visitor regardless of which page or filter they're
+// on — they don't need to be recomputed on every request. Caching them
+// turns 6 of the page's 8 queries into a once-per-5-minutes cost instead of
+// a per-request one, which is where most of the page's DB time was going
+// once the catalog grew into the thousands.
+const getProductFacets = unstable_cache(
+  async () => {
+    const categories = await prisma.category.findMany()
+    const categoryNameById = new Map(categories.map((c) => [c.id, c.name]))
+
+    const [totalActiveCount, categoryGroups, brandGroups, underTenK, tenToThirtyK, aboveThirtyK] =
+      await Promise.all([
+        prisma.product.count({ where: { status: 'active' } }),
+        prisma.product.groupBy({ by: ['categoryId'], where: { status: 'active' }, _count: { _all: true } }),
+        prisma.product.groupBy({
+          by: ['brand'],
+          where: { status: 'active', brand: { not: '' } },
+          _count: { _all: true },
+        }),
+        prisma.product.count({ where: { status: 'active', numericPrice: { lt: 10000 } } }),
+        prisma.product.count({ where: { status: 'active', numericPrice: { gte: 10000, lte: 30000 } } }),
+        prisma.product.count({ where: { status: 'active', numericPrice: { gt: 30000 } } }),
+      ])
+
+    const categoryCounts = categoryGroups
+      .map((g) => ({ name: categoryNameById.get(g.categoryId) || 'Unknown', count: g._count._all }))
+      .filter((c) => c.count > 0)
+      .sort((a, b) => a.name.localeCompare(b.name))
+    const brandCounts = brandGroups
+      .map((g) => ({ name: g.brand, count: g._count._all }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+
+    return {
+      categories,
+      categoryCounts,
+      brandCounts,
+      priceCounts: {
+        All: totalActiveCount,
+        'Under ₹10k': underTenK,
+        '₹10k - ₹30k': tenToThirtyK,
+        'Above ₹30k': aboveThirtyK,
+      } as Record<PriceFilter, number>,
+    }
+  },
+  ['product-facets'],
+  { revalidate: 300 }
+)
+
 export default async function ProductsPage({
   searchParams,
 }: {
   searchParams: Promise<{ category?: string; brand?: string; price?: string; page?: string }>
 }) {
   const sp = await searchParams
-  const settings = await getSiteSettings()
+  const [settings, facets] = await Promise.all([getSiteSettings(), getProductFacets()])
 
   const page = Math.max(1, parseInt(sp.page || '1', 10) || 1)
   const activeCategory = sp.category || 'All'
@@ -44,8 +94,7 @@ export default async function ProductsPage({
     ? (sp.price as PriceFilter)
     : 'All'
 
-  const categories = await prisma.category.findMany()
-  const categoryIdByName = new Map(categories.map((c) => [c.name, c.id]))
+  const categoryIdByName = new Map(facets.categories.map((c) => [c.name, c.id]))
 
   const where: Prisma.ProductWhereInput = { status: 'active' }
   if (activeCategory !== 'All' && categoryIdByName.has(activeCategory)) {
@@ -55,16 +104,7 @@ export default async function ProductsPage({
   const priceRange = priceRangeWhere(activePrice)
   if (priceRange) where.numericPrice = priceRange
 
-  const [
-    products,
-    filteredCount,
-    totalActiveCount,
-    categoryGroups,
-    brandGroups,
-    underTenK,
-    tenToThirtyK,
-    aboveThirtyK,
-  ] = await Promise.all([
+  const [products, filteredCount] = await Promise.all([
     prisma.product.findMany({
       where,
       // Only the fields the product card actually renders — the full
@@ -89,26 +129,7 @@ export default async function ProductsPage({
       take: PAGE_SIZE,
     }),
     prisma.product.count({ where }),
-    prisma.product.count({ where: { status: 'active' } }),
-    prisma.product.groupBy({ by: ['categoryId'], where: { status: 'active' }, _count: { _all: true } }),
-    prisma.product.groupBy({
-      by: ['brand'],
-      where: { status: 'active', brand: { not: '' } },
-      _count: { _all: true },
-    }),
-    prisma.product.count({ where: { status: 'active', numericPrice: { lt: 10000 } } }),
-    prisma.product.count({ where: { status: 'active', numericPrice: { gte: 10000, lte: 30000 } } }),
-    prisma.product.count({ where: { status: 'active', numericPrice: { gt: 30000 } } }),
   ])
-
-  const categoryNameById = new Map(categories.map((c) => [c.id, c.name]))
-  const categoryCounts = categoryGroups
-    .map((g) => ({ name: categoryNameById.get(g.categoryId) || 'Unknown', count: g._count._all }))
-    .filter((c) => c.count > 0)
-    .sort((a, b) => a.name.localeCompare(b.name))
-  const brandCounts = brandGroups
-    .map((g) => ({ name: g.brand, count: g._count._all }))
-    .sort((a, b) => a.name.localeCompare(b.name))
 
   // Format products to match the expected frontend Product type
   const formattedProducts = products.map((p) => ({
@@ -131,14 +152,9 @@ export default async function ProductsPage({
         activeCategory={activeCategory}
         activeBrand={activeBrand}
         activePrice={activePrice}
-        categories={categoryCounts}
-        brands={brandCounts}
-        priceCounts={{
-          All: totalActiveCount,
-          'Under ₹10k': underTenK,
-          '₹10k - ₹30k': tenToThirtyK,
-          'Above ₹30k': aboveThirtyK,
-        }}
+        categories={facets.categoryCounts}
+        brands={facets.brandCounts}
+        priceCounts={facets.priceCounts}
         pagination={{
           page,
           pageSize: PAGE_SIZE,

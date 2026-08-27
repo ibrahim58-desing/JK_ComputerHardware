@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 import { ProductCard } from '@/components/product-card'
@@ -25,16 +26,20 @@ function FilterOption({
   label,
   count,
   active,
-  onClick,
+  href,
+  onNavigate,
 }: {
   label: string
   count: number
   active: boolean
-  onClick: () => void
+  href: string
+  onNavigate: () => void
 }) {
   return (
-    <button
-      onClick={onClick}
+    <Link
+      href={href}
+      prefetch
+      onClick={onNavigate}
       className={`flex w-full items-center justify-between gap-2 rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all duration-200 ${
         active
           ? 'bg-primary text-primary-foreground shadow-blue'
@@ -45,7 +50,7 @@ function FilterOption({
       <span className={`text-xs font-mono ${active ? 'text-primary-foreground/70' : 'text-text-secondary/70'}`}>
         {count}
       </span>
-    </button>
+    </Link>
   )
 }
 
@@ -78,7 +83,7 @@ export function ProductsExplorer({
   // Navigating to a new URL re-runs the server query with the new filters —
   // that's the source of truth now, not local state, so pagination and
   // facet counts stay correct at catalog scale.
-  function navigate(next: { category?: string; brand?: string; price?: PriceFilter; page?: number }) {
+  function buildUrl(next: { category?: string; brand?: string; price?: PriceFilter; page?: number }) {
     const params = new URLSearchParams()
     const category = next.category ?? activeCategory
     const brand = next.brand ?? activeBrand
@@ -91,7 +96,11 @@ export function ProductsExplorer({
     if (page > 1) params.set('page', String(page))
 
     const qs = params.toString()
-    router.push(qs ? `/products?${qs}` : '/products')
+    return qs ? `/products?${qs}` : '/products'
+  }
+
+  function navigate(next: { category?: string; brand?: string; price?: PriceFilter; page?: number }) {
+    router.push(buildUrl(next))
     setMobileFiltersOpen(false)
   }
 
@@ -113,7 +122,8 @@ export function ProductsExplorer({
             label="All"
             count={priceCounts.All}
             active={activeCategory === 'All'}
-            onClick={() => navigate({ category: 'All', page: 1 })}
+            href={buildUrl({ category: 'All', page: 1 })}
+            onNavigate={() => setMobileFiltersOpen(false)}
           />
           {categories.map((c) => (
             <FilterOption
@@ -121,7 +131,8 @@ export function ProductsExplorer({
               label={c.name}
               count={c.count}
               active={activeCategory === c.name}
-              onClick={() => navigate({ category: c.name, page: 1 })}
+              href={buildUrl({ category: c.name, page: 1 })}
+              onNavigate={() => setMobileFiltersOpen(false)}
             />
           ))}
         </div>
@@ -138,7 +149,8 @@ export function ProductsExplorer({
             label="All"
             count={priceCounts.All}
             active={activeBrand === 'All'}
-            onClick={() => navigate({ brand: 'All', page: 1 })}
+            href={buildUrl({ brand: 'All', page: 1 })}
+            onNavigate={() => setMobileFiltersOpen(false)}
           />
           {brands.map((b) => (
             <FilterOption
@@ -146,7 +158,8 @@ export function ProductsExplorer({
               label={b.name}
               count={b.count}
               active={activeBrand === b.name}
-              onClick={() => navigate({ brand: b.name, page: 1 })}
+              href={buildUrl({ brand: b.name, page: 1 })}
+              onNavigate={() => setMobileFiltersOpen(false)}
             />
           ))}
         </div>
@@ -165,7 +178,8 @@ export function ProductsExplorer({
               label={p}
               count={priceCounts[p] || 0}
               active={activePrice === p}
-              onClick={() => navigate({ price: p, page: 1 })}
+              href={buildUrl({ price: p, page: 1 })}
+              onNavigate={() => setMobileFiltersOpen(false)}
             />
           ))}
         </div>
@@ -319,25 +333,45 @@ export function ProductsExplorer({
           {/* Pagination */}
           {pagination.totalPages > 1 && (
             <div className="mt-10 flex items-center justify-center gap-2">
-              <button
-                onClick={() => navigate({ page: pagination.page - 1 })}
-                disabled={pagination.page <= 1}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-card-border bg-card text-text-secondary transition-colors hover:border-primary hover:text-primary disabled:pointer-events-none disabled:opacity-40"
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={18} />
-              </button>
+              {pagination.page <= 1 ? (
+                <span
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-card-border bg-card text-text-secondary opacity-40"
+                  aria-hidden="true"
+                >
+                  <ChevronLeft size={18} />
+                </span>
+              ) : (
+                <Link
+                  href={buildUrl({ page: pagination.page - 1 })}
+                  prefetch
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-card-border bg-card text-text-secondary transition-colors hover:border-primary hover:text-primary"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={18} />
+                </Link>
+              )}
               <span className="px-4 text-sm font-semibold text-foreground">
                 Page {pagination.page} of {pagination.totalPages}
               </span>
-              <button
-                onClick={() => navigate({ page: pagination.page + 1 })}
-                disabled={pagination.page >= pagination.totalPages}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-card-border bg-card text-text-secondary transition-colors hover:border-primary hover:text-primary disabled:pointer-events-none disabled:opacity-40"
-                aria-label="Next page"
-              >
-                <ChevronRight size={18} />
-              </button>
+              {pagination.page >= pagination.totalPages ? (
+                <span
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-card-border bg-card text-text-secondary opacity-40"
+                  aria-hidden="true"
+                >
+                  <ChevronRight size={18} />
+                </span>
+              ) : (
+                <Link
+                  href={buildUrl({ page: pagination.page + 1 })}
+                  prefetch
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-card-border bg-card text-text-secondary transition-colors hover:border-primary hover:text-primary"
+                  aria-label="Next page"
+                >
+                  <ChevronRight size={18} />
+                </Link>
+              )}
             </div>
           )}
         </div>
