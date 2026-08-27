@@ -3,6 +3,7 @@ import { SignJWT, jwtVerify } from 'jose'
 import {
   ACCESS_COOKIE_NAME,
   REFRESH_COOKIE_NAME,
+  cookieDomain,
 } from '@/lib/auth'
 import {
   getJwtSecret,
@@ -241,6 +242,7 @@ export async function middleware(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
+        domain: cookieDomain(),
         path: '/',
         maxAge: 20 * 60,
       })
@@ -271,16 +273,16 @@ export async function middleware(request: NextRequest) {
         { success: false, error: 'Session expired' },
         { status: 401 }
       )
-      response.cookies.set(ACCESS_COOKIE_NAME, '', { maxAge: 0, path: '/' })
-      response.cookies.set(REFRESH_COOKIE_NAME, '', { maxAge: 0, path: '/' })
+      response.cookies.set(ACCESS_COOKIE_NAME, '', { maxAge: 0, domain: cookieDomain(), path: '/' })
+      response.cookies.set(REFRESH_COOKIE_NAME, '', { maxAge: 0, domain: cookieDomain(), path: '/' })
       return withHeaders(response)
     }
 
     const response = NextResponse.redirect(
       new URL('/admin/login', request.url)
     )
-    response.cookies.set(ACCESS_COOKIE_NAME, '', { maxAge: 0, path: '/' })
-    response.cookies.set(REFRESH_COOKIE_NAME, '', { maxAge: 0, path: '/' })
+    response.cookies.set(ACCESS_COOKIE_NAME, '', { maxAge: 0, domain: cookieDomain(), path: '/' })
+    response.cookies.set(REFRESH_COOKIE_NAME, '', { maxAge: 0, domain: cookieDomain(), path: '/' })
     return withHeaders(response)
   }
 }

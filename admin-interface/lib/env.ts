@@ -41,3 +41,10 @@ export function getJwtAudience(): string {
 
 export const ACCESS_TOKEN_EXPIRY = process.env.ADMIN_ACCESS_TOKEN_EXPIRY || '20m'
 export const REFRESH_TOKEN_EXPIRY = process.env.ADMIN_REFRESH_TOKEN_EXPIRY || '7d'
+
+// Must match backend-api's cookieDomain() exactly — auth cookies are set by
+// backend-api but read/refreshed here too, so both need the same scope.
+export function cookieDomain(): string | undefined {
+  if (process.env.COOKIE_DOMAIN) return process.env.COOKIE_DOMAIN
+  return process.env.NODE_ENV === 'production' ? '.jkinfosystem.com' : undefined
+}

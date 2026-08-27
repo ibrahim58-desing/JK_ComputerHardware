@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { cookieDomain } from '@/lib/env'
 
 export const CSRF_COOKIE_NAME = 'jk_csrf_token'
 export const CSRF_HEADER_NAME = 'x-csrf-token'
@@ -19,6 +20,7 @@ export function setCsrfCookie(response: NextResponse, token: string): void {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
+    domain: cookieDomain(),
     path: '/',
     maxAge: 60 * 60 * 24 * 7,
   })
@@ -29,6 +31,7 @@ export function clearCsrfCookie(response: NextResponse): void {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
+    domain: cookieDomain(),
     path: '/',
     maxAge: 0,
   })

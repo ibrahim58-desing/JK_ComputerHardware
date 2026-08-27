@@ -12,6 +12,15 @@ import {
 export const ACCESS_COOKIE_NAME = 'jk_admin_token'
 export const REFRESH_COOKIE_NAME = 'jk_admin_refresh'
 
+// admin-interface, user-interface, and backend-api all live on different
+// subdomains of the same site in production, so auth cookies need the
+// parent-domain scope to be readable across all three. Unset in dev, where
+// they're separate ports on localhost (already same-site without it).
+export function cookieDomain(): string | undefined {
+  if (process.env.COOKIE_DOMAIN) return process.env.COOKIE_DOMAIN
+  return process.env.NODE_ENV === 'production' ? '.jkinfosystem.com' : undefined
+}
+
 const DUMMY_HASH = bcrypt.hashSync('timing-attack-dummy-password', 12)
 
 export interface TokenPayload {
@@ -116,6 +125,7 @@ export async function setAuthCookies(
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
+    domain: cookieDomain(),
     path: '/',
     maxAge: accessMaxAge(),
   })
@@ -123,6 +133,7 @@ export async function setAuthCookies(
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
+    domain: cookieDomain(),
     path: '/',
     maxAge: refreshMaxAge(),
   })
@@ -134,6 +145,7 @@ export async function setAccessCookie(accessToken: string): Promise<void> {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
+    domain: cookieDomain(),
     path: '/',
     maxAge: accessMaxAge(),
   })
@@ -145,6 +157,7 @@ export async function clearAuthCookies(): Promise<void> {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict' as const,
+    domain: cookieDomain(),
     path: '/',
     maxAge: 0,
   }
