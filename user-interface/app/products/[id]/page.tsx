@@ -35,9 +35,10 @@ export async function generateMetadata({
 
   const description = product.shortDescription || product.description?.slice(0, 160) || undefined
   const image = resolveImageUrl(product.image)
+  const priceSuffix = product.numericPrice > 0 ? ` — ${product.price}` : ''
 
   return {
-    title: `${product.name} — ${product.price} | JK Infosystem`,
+    title: `${product.name}${priceSuffix} | JK Infosystem`,
     description,
     openGraph: {
       title: product.name,
@@ -124,9 +125,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 {product.name}
               </h1>
               <div className="mt-4 flex flex-wrap items-center gap-4">
-                <span className="font-heading text-4xl font-bold text-primary">
-                  {product.price}
-                </span>
+                {product.numericPrice > 0 && (
+                  <span className="font-heading text-4xl font-bold text-primary">
+                    {product.price}
+                  </span>
+                )}
                 {product.originalPrice && (
                   <span className="text-lg font-medium text-text-secondary line-through">
                     {product.originalPrice}

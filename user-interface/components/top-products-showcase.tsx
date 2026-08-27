@@ -72,7 +72,9 @@ function ShowcaseCard({
           <h3 className="line-clamp-1 text-sm font-bold text-foreground group-hover:text-primary transition-colors">
             {product.name}
           </h3>
-          <p className="mt-1 font-heading text-lg font-bold text-primary">{product.price}</p>
+          {product.price !== '₹0' && (
+            <p className="mt-1 font-heading text-lg font-bold text-primary">{product.price}</p>
+          )}
         </div>
       </Link>
     </motion.div>

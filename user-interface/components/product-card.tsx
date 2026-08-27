@@ -16,6 +16,8 @@ import { whatsappHref } from '@/lib/settings'
 export function ProductCard({ product, whatsappNumber = '' }: { product: Product; whatsappNumber?: string }) {
   const waMessage = `Hi JK Infosystem! I am interested in buying ${product.name}. Please share availability and details.`
   const outOfStock = typeof product.stock === 'number' && product.stock <= 0
+  // Admin left the price blank — numericPrice defaults to 0 in that case.
+  const hasPrice = product.numericPrice > 0
 
   return (
     <motion.div variants={itemVariants} layout className="h-full">
@@ -91,21 +93,36 @@ export function ProductCard({ product, whatsappNumber = '' }: { product: Product
 
           <div className="mt-auto">
             <div className="mt-5 flex items-end justify-between gap-2 border-t border-card-border pt-4">
-              <div>
-                <span className="block text-[11px] font-medium text-text-secondary">Price</span>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-heading text-2xl font-bold text-primary">{product.price}</span>
-                  {product.originalPrice && (
-                    <span className="text-sm font-medium text-text-secondary line-through">
-                      {product.originalPrice}
+              {hasPrice ? (
+                <>
+                  <div>
+                    <span className="block text-[11px] font-medium text-text-secondary">Price</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-heading text-2xl font-bold text-primary">{product.price}</span>
+                      {product.originalPrice && (
+                        <span className="text-sm font-medium text-text-secondary line-through">
+                          {product.originalPrice}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {!outOfStock && (
+                    <span className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      In Stock
                     </span>
                   )}
-                </div>
-              </div>
-              {!outOfStock && (
-                <span className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  In Stock
+                </>
+              ) : (
+                // No price set yet — instead of leaving the price side blank,
+                // let the stock status fill the whole row.
+                <span
+                  className={`flex w-full items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold ${
+                    outOfStock ? 'bg-surface text-text-secondary' : 'bg-emerald-50 text-emerald-600'
+                  }`}
+                >
+                  {!outOfStock && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                  {outOfStock ? 'Out of Stock' : 'In Stock'}
                 </span>
               )}
             </div>
