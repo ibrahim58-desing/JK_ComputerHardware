@@ -39,6 +39,10 @@ function buildCsp(nonce: string): string {
   const scriptSrc = isDev
     ? `'self' 'nonce-${nonce}' 'unsafe-eval'`
     : `'self' 'nonce-${nonce}' 'strict-dynamic'`
+  // backend-api is a separate origin (subdomain in prod, separate port in
+  // dev) — CSP treats that the same as full cross-origin, so it needs to be
+  // allow-listed explicitly alongside 'self'.
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
 
   return [
     "default-src 'self'",
@@ -47,9 +51,9 @@ function buildCsp(nonce: string): string {
     // no nonce mechanism in the CSP spec — only <style> elements do — so
     // this can't be tightened without migrating those to CSS classes.
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    `img-src 'self' data: blob: ${apiUrl}`,
     "font-src 'self' data:",
-    "connect-src 'self'",
+    `connect-src 'self' ${apiUrl}`,
     "frame-src 'self' https://www.openstreetmap.org",
     "object-src 'none'",
     "worker-src 'self'",

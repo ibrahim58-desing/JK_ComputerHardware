@@ -31,14 +31,18 @@ function buildCsp(): string {
   // needed to fix hydration and would only widen the attack surface in prod.
   const isDev = process.env.NODE_ENV !== 'production'
   const scriptSrc = isDev ? "'self' 'unsafe-inline' 'unsafe-eval'" : "'self' 'unsafe-inline'"
+  // backend-api is a separate origin (subdomain in prod, separate port in
+  // dev) — CSP treats that the same as full cross-origin, so it needs to be
+  // allow-listed explicitly alongside 'self'.
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
 
   return [
     "default-src 'self'",
     `script-src ${scriptSrc}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    `img-src 'self' data: blob: ${apiUrl}`,
     "font-src 'self' data:",
-    "connect-src 'self'",
+    `connect-src 'self' ${apiUrl}`,
     "frame-src 'self' https://www.openstreetmap.org",
     "object-src 'none'",
     "worker-src 'self'",
