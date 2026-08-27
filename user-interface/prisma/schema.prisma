@@ -1,12 +1,12 @@
 // JK Computer Hardware — Prisma Schema
-// PostgreSQL database schema for the e-commerce website
+// MySQL database schema for the e-commerce website
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -37,10 +37,10 @@ model Category {
 
 model Product {
   id               Int            @id @default(autoincrement())
-  name             String
-  slug             String         @unique
-  description      String         @default("")
-  shortDescription String         @default("") @map("short_description")
+  name             String         @db.VarChar(255)
+  slug             String         @unique @db.VarChar(255)
+  description      String         @default("") @db.Text
+  shortDescription String         @default("") @map("short_description") @db.Text
   price            String         @default("₹0")
   numericPrice     Float          @default(0) @map("numeric_price")
   originalPrice    String?        @map("original_price")
@@ -88,11 +88,11 @@ model ProductImage {
 
 model Enquiry {
   id           Int      @id @default(autoincrement())
-  customerName String   @map("customer_name")
+  customerName String   @map("customer_name") @db.VarChar(255)
   phone        String   @default("")
-  email        String   @default("")
-  subject      String   @default("")
-  message      String
+  email        String   @default("") @db.VarChar(255)
+  subject      String   @default("") @db.VarChar(300)
+  message      String   @db.Text
   productId    Int?     @map("product_id")
   product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now()) @map("created_at")
@@ -108,7 +108,7 @@ model Testimonial {
   id           Int      @id @default(autoincrement())
   name         String
   role         String   @default("")
-  content      String
+  content      String   @db.Text
   rating       Int      @default(5)
   status       String   @default("active") // active | inactive
   displayOrder Int      @default(0) @map("display_order")
@@ -124,7 +124,7 @@ model Testimonial {
 model Comment {
   id        Int      @id @default(autoincrement())
   name      String
-  message   String
+  message   String   @db.Text
   status    String   @default("active") // active | hidden
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -138,7 +138,7 @@ model Comment {
 model SiteSetting {
   id        Int      @id @default(autoincrement())
   key       String   @unique
-  value     String   @default("")
+  value     String   @default("") @db.Text
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
