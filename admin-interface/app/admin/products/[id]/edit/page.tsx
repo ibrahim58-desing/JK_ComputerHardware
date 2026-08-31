@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft, Save, Loader2, Upload, Trash2, Image as ImageIcon } from 'lucide-react'
 import { Toast, useToast } from '@/components/ui/toast'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { resolveImageUrl } from '@/lib/products'
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -347,7 +348,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             <div className="space-y-4">
               <div className="relative rounded-xl overflow-hidden border-2 border-primary bg-surface aspect-square flex items-center justify-center">
                 {product.image && product.image !== '/placeholder.jpg' ? (
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                  <img src={resolveImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="text-center text-text-secondary">
                     <ImageIcon size={48} className="mx-auto opacity-20 mb-2" />
@@ -373,7 +374,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 <div className="grid grid-cols-2 gap-3">
                   {product.images.map((img: any) => (
                     <div key={img.id} className="relative rounded-xl overflow-hidden border-2 border-card-border group">
-                      <img src={img.imageUrl} alt="" className="w-full aspect-square object-cover" />
+                      <img src={resolveImageUrl(img.imageUrl)} alt="" className="w-full aspect-square object-cover" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <button 
                           onClick={() => handleSetMainImage(img.imageUrl)}

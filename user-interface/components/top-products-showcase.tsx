@@ -5,6 +5,7 @@ import { motion, useMotionValue, useTransform, useAnimationFrame } from 'framer-
 import Link from 'next/link'
 import { ImageIcon } from 'lucide-react'
 import { SectionHeading } from '@/components/section-heading'
+import { resolveImageUrl } from '@/lib/products'
 
 type TopProduct = {
   id: number
@@ -57,7 +58,7 @@ function ShowcaseCard({
         <div className="relative aspect-square overflow-hidden rounded-xl bg-surface">
           {product.image && product.image !== '/placeholder.jpg' ? (
             <img
-              src={product.image}
+              src={resolveImageUrl(product.image)}
               alt={product.name}
               className="h-full w-full object-cover"
               draggable={false}

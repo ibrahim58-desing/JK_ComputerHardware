@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Save, Loader2, Upload, Image as ImageIcon, X } from 'lucide-react'
 import { Toast, useToast } from '@/components/ui/toast'
+import { resolveImageUrl } from '@/lib/products'
 
 export default function AddProductPage() {
   const router = useRouter()
@@ -245,7 +246,7 @@ export default function AddProductPage() {
           <div className="space-y-4 max-w-sm">
             <div className="relative rounded-xl overflow-hidden border-2 border-card-border bg-surface aspect-square flex items-center justify-center text-text-secondary">
               {formData.image !== '/placeholder.jpg' ? (
-                <img src={formData.image} alt="Product preview" className="w-full h-full object-cover" />
+                <img src={resolveImageUrl(formData.image)} alt="Product preview" className="w-full h-full object-cover" />
               ) : (
                 <ImageIcon size={48} className="opacity-20" />
               )}

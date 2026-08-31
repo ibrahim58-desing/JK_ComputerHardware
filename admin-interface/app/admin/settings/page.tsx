@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { adminFetch } from '@/lib/admin-fetch'
 import { Save, Loader2, Home, Star, Search, X, ArrowUp, ArrowDown, ImageIcon, Phone, Lock, CheckCircle2 } from 'lucide-react'
+import { resolveImageUrl } from '@/lib/products'
 
 const MAX_TOP_PRODUCTS = 10
 
@@ -349,7 +350,7 @@ export default function SettingsPage() {
                       </span>
                       <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface border border-card-border flex items-center justify-center text-text-secondary">
                         {product.image && product.image !== '/placeholder.jpg' ? (
-                          <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                          <img src={resolveImageUrl(product.image)} alt={product.name} className="h-full w-full object-cover" />
                         ) : (
                           <ImageIcon size={16} />
                         )}
@@ -426,7 +427,7 @@ export default function SettingsPage() {
                     />
                     <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface border border-card-border flex items-center justify-center text-text-secondary">
                       {product.image && product.image !== '/placeholder.jpg' ? (
-                        <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                        <img src={resolveImageUrl(product.image)} alt={product.name} className="h-full w-full object-cover" />
                       ) : (
                         <ImageIcon size={16} />
                       )}

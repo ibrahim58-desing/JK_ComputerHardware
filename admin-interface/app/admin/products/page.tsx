@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Plus, Search, Edit, Trash2, Loader2, Image as ImageIcon, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Toast, useToast } from '@/components/ui/toast'
+import { resolveImageUrl } from '@/lib/products'
 
 const PAGE_SIZE = 25
 
@@ -134,7 +135,7 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-4">
                         <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface border border-card-border flex items-center justify-center text-text-secondary">
                           {product.image && product.image !== '/placeholder.jpg' ? (
-                            <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                            <img src={resolveImageUrl(product.image)} alt={product.name} className="h-full w-full object-cover" />
                           ) : (
                             <ImageIcon size={20} />
                           )}

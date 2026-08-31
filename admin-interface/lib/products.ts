@@ -36,6 +36,19 @@ export type Product = {
   offer?: string | null
 }
 
+// Uploaded photos live on backend-api's filesystem, served from its own
+// subdomain — a bare '/uploads/...' path resolves against whatever origin
+// the page itself is on (admin.jkinfosystem.com), which has no such file.
+export function resolveImageUrl(path: string): string {
+  if (!path) return path
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  if (path.startsWith('/uploads/')) {
+    const base = process.env.NEXT_PUBLIC_API_URL || ''
+    return base ? `${base}${path}` : path
+  }
+  return path
+}
+
 export const categoryIcons: Record<Category, LucideIcon> = {
   CPU: Cpu,
   GPU: Gpu,
