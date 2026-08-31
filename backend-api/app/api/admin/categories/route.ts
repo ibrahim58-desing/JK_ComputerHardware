@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createCategorySchema } from '@/lib/validation'
 import { verifyAuth } from '@/lib/auth'
-import { applyRateLimit } from '@/lib/api-helpers'
+import { applyAdminRateLimit } from '@/lib/api-helpers'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { successResponse, validationError, serverError, unauthorizedError } from '@/lib/errors'
 import { logCategoryCreated } from '@/lib/logger'
@@ -31,7 +31,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'admin-categories', RATE_LIMITS.adminApi)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'admin-categories', RATE_LIMITS.adminApi)
     if (rateLimitResponse) return rateLimitResponse
 
     const admin = await verifyAuth()

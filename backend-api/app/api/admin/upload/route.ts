@@ -1,13 +1,13 @@
 import { NextRequest } from 'next/server'
 import { saveUploadedImage } from '@/lib/upload'
 import { verifyAuth } from '@/lib/auth'
-import { applyRateLimit } from '@/lib/api-helpers'
+import { applyAdminRateLimit } from '@/lib/api-helpers'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { successResponse, errorResponse, serverError, unauthorizedError } from '@/lib/errors'
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'upload', RATE_LIMITS.upload)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'upload', RATE_LIMITS.upload)
     if (rateLimitResponse) return rateLimitResponse
 
     const admin = await verifyAuth()

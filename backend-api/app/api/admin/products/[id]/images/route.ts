@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { saveUploadedImage } from '@/lib/upload'
 import { reorderImagesSchema } from '@/lib/validation'
 import { verifyAuth } from '@/lib/auth'
-import { applyRateLimit } from '@/lib/api-helpers'
+import { applyAdminRateLimit } from '@/lib/api-helpers'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import {
   successResponse,
@@ -21,7 +21,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'upload', RATE_LIMITS.upload)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'upload', RATE_LIMITS.upload)
     if (rateLimitResponse) return rateLimitResponse
 
     const { id } = await params
@@ -94,7 +94,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'admin-products', RATE_LIMITS.adminApi)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'admin-products', RATE_LIMITS.adminApi)
     if (rateLimitResponse) return rateLimitResponse
 
     const { id } = await params

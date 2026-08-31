@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { updateSettingsSchema } from '@/lib/validation'
 import { verifyAuth } from '@/lib/auth'
-import { applyRateLimit } from '@/lib/api-helpers'
+import { applyAdminRateLimit } from '@/lib/api-helpers'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import {
   successResponse,
@@ -28,7 +28,7 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'admin-settings', RATE_LIMITS.adminApi)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'admin-settings', RATE_LIMITS.adminApi)
     if (rateLimitResponse) return rateLimitResponse
 
     const admin = await verifyAuth()

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyAuth } from '@/lib/auth'
-import { applyRateLimit } from '@/lib/api-helpers'
+import { applyAdminRateLimit } from '@/lib/api-helpers'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { successResponse, notFoundError, serverError, unauthorizedError } from '@/lib/errors'
 import { logCommentModerated, logCommentDeleted } from '@/lib/logger'
@@ -11,7 +11,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'admin-comments', RATE_LIMITS.adminApi)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'admin-comments', RATE_LIMITS.adminApi)
     if (rateLimitResponse) return rateLimitResponse
 
     const { id } = await params
@@ -45,7 +45,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'admin-comments', RATE_LIMITS.adminApi)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'admin-comments', RATE_LIMITS.adminApi)
     if (rateLimitResponse) return rateLimitResponse
 
     const { id } = await params

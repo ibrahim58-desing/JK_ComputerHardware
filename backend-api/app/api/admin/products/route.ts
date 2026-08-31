@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { createProductSchema } from '@/lib/validation'
 import { parsePriceToNumber } from '@/lib/utils'
 import { verifyAuth } from '@/lib/auth'
-import { applyRateLimit } from '@/lib/api-helpers'
+import { applyAdminRateLimit } from '@/lib/api-helpers'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { successResponse, validationError, serverError, errorResponse } from '@/lib/errors'
 import { logProductCreated } from '@/lib/logger'
@@ -22,7 +22,7 @@ const MAX_PAGE_SIZE = 100
 
 export async function GET(request: NextRequest) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'admin-products', RATE_LIMITS.adminApi)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'admin-products', RATE_LIMITS.adminApi)
     if (rateLimitResponse) return rateLimitResponse
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'admin-products', RATE_LIMITS.adminApi)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'admin-products', RATE_LIMITS.adminApi)
     if (rateLimitResponse) return rateLimitResponse
 
     const admin = await verifyAuth()

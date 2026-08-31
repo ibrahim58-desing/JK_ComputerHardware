@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyAuth, comparePassword, hashPassword } from '@/lib/auth'
 import { changePasswordSchema } from '@/lib/validation'
-import { applyRateLimit } from '@/lib/api-helpers'
+import { applyAdminRateLimit } from '@/lib/api-helpers'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import {
   successResponse,
@@ -15,7 +15,7 @@ import { ZodError } from 'zod'
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'change-password', RATE_LIMITS.login)
+    const rateLimitResponse = await applyAdminRateLimit(request, 'change-password', RATE_LIMITS.login)
     if (rateLimitResponse) return rateLimitResponse
 
     const session = await verifyAuth()
