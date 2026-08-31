@@ -3,6 +3,10 @@ import { errorResponse } from '@/lib/errors'
 import { checkRateLimit, type RateLimitConfig } from '@/lib/rate-limit'
 
 export function getClientIp(request: NextRequest): string {
+  console.log('[rate-limit debug]', {
+    xff: request.headers.get('x-forwarded-for'),
+    xri: request.headers.get('x-real-ip'),
+  })
   return (
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     request.headers.get('x-real-ip') ||
