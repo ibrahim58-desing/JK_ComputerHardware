@@ -139,7 +139,7 @@ export function MapSection() {
         >
           <iframe
             title="JK Infosystem location on map"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=80.24%2C13.05%2C80.29%2C13.09&layer=mapnik&marker=13.0707%2C80.2609"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=80.2465%2C13.0488%2C80.2965%2C13.0888&layer=mapnik&marker=13.068846%2C80.271530"
             className="h-[420px] w-full"
             style={{ filter: 'hue-rotate(180deg) saturate(0.85) contrast(0.95)' }}
             loading="lazy"
