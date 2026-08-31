@@ -23,5 +23,7 @@ node_modules
 prisma/*.db
 *.sql
 
-# Uploads
-/public/uploads/
+# Uploads — each app (admin-interface, backend-api, user-interface) has its
+# own public/uploads/, not just one at the repo root; the leading-slash form
+# only matched the latter, so uploaded product photos were being committed.
+**/public/uploads/
