@@ -24,8 +24,12 @@ export const RATE_LIMITS = {
   login: { maxAttempts: 5, windowMs: 15 * 60 * 1000 },
   enquiry: { maxAttempts: 10, windowMs: 15 * 60 * 1000 },
   comment: { maxAttempts: 5, windowMs: 15 * 60 * 1000 },
-  upload: { maxAttempts: 20, windowMs: 15 * 60 * 1000 },
-  adminApi: { maxAttempts: 100, windowMs: 15 * 60 * 1000 },
+  // Keyed by authenticated admin id (not IP), so these only guard against a
+  // single runaway session, not abuse from strangers — sized for bulk
+  // catalog work (editing/uploading photos across ~1900 products), not just
+  // casual browsing.
+  upload: { maxAttempts: 300, windowMs: 15 * 60 * 1000 },
+  adminApi: { maxAttempts: 1000, windowMs: 15 * 60 * 1000 },
 } as const
 
 export function checkRateLimit(
