@@ -261,6 +261,7 @@ export async function middleware(request: NextRequest) {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
+          domain: cookieDomain(),
           path: '/',
           maxAge: 20 * 60,
         })

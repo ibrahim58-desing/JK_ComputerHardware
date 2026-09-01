@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { errorResponse } from '@/lib/errors'
 import { checkRateLimit, type RateLimitConfig } from '@/lib/rate-limit'
-import { verifyAuth } from '@/lib/auth'
 
 export function getClientIp(request: NextRequest): string {
   return (
@@ -34,28 +33,17 @@ export function applyRateLimit(
   return null
 }
 
-/** For /api/admin/* routes — keys by the authenticated admin's id instead
- *  of client IP. IP-based limiting behind a reverse proxy (cPanel/LiteSpeed
- *  here) depends on x-forwarded-for being forwarded correctly, and even
- *  when it is, one admin's normal usage can still collide with any other
- *  visitor sharing that IP. Every caller of this is already behind
- *  middleware's JWT check, so the admin id is always available. */
+/** For /api/admin/* routes. Disabled (always allows) — admin routes are
+ *  already behind middleware's JWT check, and counting requests per admin
+ *  kept tripping false "Too many requests" lockouts during legitimate bulk
+ *  catalog work (editing/uploading photos across ~2000 products). Kept as
+ *  a function (rather than removing all ~11 call sites) so it can be
+ *  re-enabled in one place if ever needed. */
 export async function applyAdminRateLimit(
-  request: NextRequest,
-  namespace: string,
-  config?: Partial<RateLimitConfig>
+  _request: NextRequest,
+  _namespace: string,
+  _config?: Partial<RateLimitConfig>
 ) {
-  const admin = await verifyAuth()
-  const key = admin ? `admin-${admin.adminId}` : getClientIp(request)
-  const result = checkRateLimit(`${namespace}:${key}`, config)
-
-  if (!result.allowed) {
-    return errorResponse(
-      `Too many requests. Try again in ${Math.ceil(result.resetIn / 60000)} minutes.`,
-      429
-    )
-  }
-
   return null
 }
 
